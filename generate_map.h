@@ -30,7 +30,7 @@ int rand_with_range(int min_rand, int max_rand){
 int is_neighbours_with(char c, int x, int y){
     for(int delta_x = -1; delta_x <= 1; delta_x++){
         for(int delta_y = -1; delta_y <= 1; delta_y++){
-            if (delta_x == 0 && delta_y == 0){
+            if(delta_x == 0 && delta_y == 0){
                 continue;
             }
             if(mvinch(y + delta_y, x + delta_x) == c){
@@ -84,7 +84,7 @@ int check_room(struct room *rooms, int room_count){
         int width_i = rooms[i].x_size;
         int height_i = rooms[i].y_size;
 
-        if ((x_start < x_start_i + width_i + 10) && (x_start + width + 10 > x_start_i) && (y_start < y_start_i + height_i + 10) && (y_start + height + 10 > y_start_i)){
+        if((x_start < x_start_i + width_i + 10) && (x_start + width + 10 > x_start_i) && (y_start < y_start_i + height_i + 10) && (y_start + height + 10 > y_start_i)){
             return 0;
         }
     }
@@ -97,39 +97,42 @@ void print_hallway(struct hallway *hallways, int hallway_count){
     int x2 = hallways[hallway_count].x_2;
     int y2 = hallways[hallway_count].y_2;
 
-    // Horizontal part first
-    while (x != x2){
-        if (x < x2){
+    while(x != x2){
+        if(x < x2){
             x++;
-        } else{
+        }
+        else{
             x--;
         }
 
-        if (mvinch(y, x) == '|' || mvinch(y, x) == '_'){
+        if(mvinch(y, x) == '|' || mvinch(y, x) == '_'){
             mvprintw(y, x, "+");
-        } else if (mvinch(y, x) != '.' && mvinch(y, x) != '+'){
+        }
+        else if(mvinch(y, x) != '.' && mvinch(y, x) != '+'){
             mvprintw(y, x, "#");
         }
     }
 
-    // Vertical part second
-    while (y != y2){
-        if (y < y2){
+    while(y != y2){
+        if(y < y2){
             y++;
-        } else{
+        }
+        else{
             y--;
         }
 
-        if (mvinch(y, x) == '|' || mvinch(y, x) == '_'){
+        if(mvinch(y, x) == '|' || mvinch(y, x) == '_'){
             mvprintw(y, x, "+");
-        } else if (mvinch(y, x) != '.' && mvinch(y, x) != '+'){
+        }
+        else if(mvinch(y, x) != '.' && mvinch(y, x) != '+'){
             mvprintw(y, x, "#");
         }
     }
 
-    if (mvinch(y2, x2) == '|' || mvinch(y2, x2) == '_'){
+    if(mvinch(y2, x2) == '|' || mvinch(y2, x2) == '_'){
         mvprintw(y2, x2, "+");
-    } else if (mvinch(y2, x2) != '.' && mvinch(y2, x2) != '+'){
+    }
+    else if(mvinch(y2, x2) != '.' && mvinch(y2, x2) != '+'){
         mvprintw(y2, x2, "#");
     }
 }
@@ -202,7 +205,7 @@ void generate_map(char *username, char difficulty){
     
     int all_rooms = rand_with_range(min_rand, max_rand);
 
-    while (1){
+    while(1){
         max_rand = 20;
         min_rand = 4;
         rooms[room_count].x_size = rand_with_range(min_rand, max_rand);
@@ -217,12 +220,12 @@ void generate_map(char *username, char difficulty){
         min_rand = 1;
         rooms[room_count].y_top_left = rand_with_range(min_rand, max_rand);
 
-        if (check_room(rooms, room_count)){
+        if(check_room(rooms, room_count)){
             print_room(rooms, room_count);
             room_count++;
         }
 
-        if (room_count >= all_rooms){
+        if(room_count >= all_rooms){
             break;
         }
     }

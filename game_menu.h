@@ -10,7 +10,6 @@ void print_game_menu(int highlight, char **options){
     int y =(LINES - 9) / 2;
     start_color();
 
-
     attron(A_UNDERLINE | A_BOLD);
     mvprintw(y - 2,(COLS - 9) / 2, "Game Menu");
     attroff(A_UNDERLINE | A_BOLD);

@@ -78,7 +78,7 @@ void print_leaderboard(struct User users[], int user_count, int page_number, cha
             attroff(COLOR_PAIR(4) | A_ITALIC);
             mvprintw(y + i - start_index,(COLS + 62) / 2, "-");
         }
-        //🥇🥈🥉
+        
         mvprintw(y + i - start_index,(COLS - 60) / 2, "%d", i + 1);
         if(i == 0){
             mvprintw(y + i - start_index, (COLS - 50) / 2, "%s", users[i].username);

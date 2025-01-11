@@ -5,7 +5,6 @@ void print_menu(int highlight, char **options){
     int y = (LINES - 9) / 2;
     start_color();
 
-
     attron(A_UNDERLINE | A_BOLD | COLOR_PAIR(1));
     mvprintw(y - 4, (COLS - 5) / 2, "ROGUE");
     attroff(COLOR_PAIR(1));

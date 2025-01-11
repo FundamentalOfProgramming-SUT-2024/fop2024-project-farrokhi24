@@ -11,12 +11,11 @@ struct point{
     int full;
 };
 
-typedef struct {
+typedef struct{
     char ch;
     int color_pair;
     int color_check;
 } character;
-
 
 character **map;
 int room_count;
@@ -85,7 +84,6 @@ void ask_password(int password, int x, int y, int floor_num){
     initscr();
     start_color();
     keypad(stdscr, TRUE);
-    
 
     WINDOW *win = newwin(5, 30, (LINES - 5) / 2, (COLS - 30) / 2);
     keypad(win, TRUE);
@@ -340,11 +338,13 @@ int is_top_left(int x, int y){
     }
     return 0;
 }
-void print_rooms() {
-    for (int i = 0; i < room_count; i++) {
-        if (rooms[i].explored == 0) {
+
+void print_rooms(){
+    for(int i = 0; i < room_count; i++){
+        if(rooms[i].explored == 0){
             attron(COLOR_PAIR(20));
-        } else {
+        }
+        else{
             attroff(COLOR_PAIR(20));
         }
 
@@ -354,16 +354,16 @@ void print_rooms() {
         int height = rooms[i].y_size;
 
         mvprintw(y_start, x_start, "_");
-        for (int j = 1; j <= width; j++) {
+        for(int j = 1; j <= width; j++){
             move(y_start, x_start + j);
             printw("_");
         }
         mvprintw(y_start, x_start + width + 1, "_");
 
-        for (int j = 1; j <= height; j++) {
+        for(int j = 1; j <= height; j++){
             move(y_start + j, x_start);
             printw("|");
-            for (int k = 1; k <= width; k++) {
+            for(int k = 1; k <= width; k++){
                 mvprintw(y_start + j, x_start + k, ".");
             }
             move(y_start + j, x_start + width + 1);
@@ -371,7 +371,7 @@ void print_rooms() {
         }
 
         mvprintw(y_start + height + 1, x_start, "_");
-        for (int j = 1; j <= width; j++) {
+        for(int j = 1; j <= width; j++){
             move(y_start + height + 1, x_start + j);
             printw("_");
         }
@@ -383,11 +383,10 @@ void print_rooms() {
     mvprintw(player.y, player.x, "\U0001FBC5");
 }
 
-
-int find_room(int x, int y) {
-    for (int i = 0; i < room_count; i++) {
-        if (x >= rooms[i].x_top_left && x <= rooms[i].x_top_left + rooms[i].x_size + 1 &&
-            y >= rooms[i].y_top_left && y <= rooms[i].y_top_left + rooms[i].y_size + 1) {
+int find_room(int x, int y){
+    for(int i = 0; i < room_count; i++){
+        if(x >= rooms[i].x_top_left && x <= rooms[i].x_top_left + rooms[i].x_size + 1 &&
+            y >= rooms[i].y_top_left && y <= rooms[i].y_top_left + rooms[i].y_size + 1){
             return i;
         }
     }
@@ -408,26 +407,26 @@ void generate_staircase(int floor_num){
     }
 }
 
-void generate_gold() {
-    
+void generate_gold(){
     int gold_count = rand_with_range(10, 20);
     int i = 0;
     int x, y;
     
-    while (i < gold_count) {
+    while(i < gold_count){
         x = rand_with_range(1, COLS);
         y = rand_with_range(1, LINES);
         attron(COLOR_PAIR(20));
-        if ((mvinch(y, x) & A_CHARTEXT) == '.') {
+        if((mvinch(y, x) & A_CHARTEXT) == '.'){
             
-            if (rand() % 10 == 0) {
+            if(rand() % 10 == 0){
                 if(rooms[find_room(x, y)].explored == 1){
                     attron(COLOR_PAIR(15));
                 }
                 mvprintw(y, x, "x");
                 map[y][x].color_pair = 15;
                 attroff(COLOR_PAIR(15));
-            } else {
+            }
+            else{
                 if(rooms[find_room(x, y)].explored == 1){
                     attron(COLOR_PAIR(7));
                 }
@@ -616,8 +615,6 @@ void display_door_password(int password, int floor_num){
         }
     }
 
-    
-
     delwin(win);
     refresh();
 }
@@ -636,12 +633,11 @@ void food_list(int *strength){
         }
     }
 
-
     int highlight = 0;
     int check = 0;
 
     char *options[2] ={"Eat 1 Normal Food", "Back"};
-    while (!check){
+    while(!check){
         clear();
         attroff(A_REVERSE);
         attron(A_BOLD);
@@ -745,7 +741,7 @@ void weapon_list(){
         }
     }
 
-    while (1){
+    while(1){
         clear();
         attroff(A_REVERSE);
         attron(A_BOLD);
@@ -786,7 +782,6 @@ void weapon_list(){
     refresh();
 }
 
-
 void spell_list(){
     character map[LINES][COLS];
     for(int y = 0; y < LINES; y++){
@@ -796,7 +791,7 @@ void spell_list(){
         }
     }
 
-    while (1){
+    while(1){
         clear();
         attroff(A_REVERSE);
         attron(A_BOLD);
@@ -886,30 +881,31 @@ void reveal_trap(struct point *traps, int trap_count, int x, int y){
         }
     }
 }
-void print_map_with_colors(int floor_num) {
-    mvprintw(LINES - 1, 30, "Score:");
-        mvprintw(LINES - 1, 50, "Hits: 0");
-        mvprintw(LINES - 1, 70, "Str:");
-        mvprintw(LINES - 1, 90, "Gold:");
-        mvprintw(LINES - 1, 110, "Exp:");
-        mvprintw(LINES - 1, 130, "Ancient Keys:");
 
-        mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
-        if(floor_num == 4){
-            mvprintw(1, COLS - 30, "Press q to Finish the Game.");
-        }
-        mvprintw(LINES - 1, 37, "%d", gold);
-        mvprintw(LINES - 1, 96, "%d", gold);
-        mvprintw(LINES - 1, 75, "  ");
-        mvprintw(LINES - 1, 75, "%d", strength);
-    for (int y = 0; y < LINES; y++) {
-        for (int x = 0; x < COLS; x++) {
-            if (map[y][x].color_pair != 0) {
+void print_map_with_colors(int floor_num){
+    mvprintw(LINES - 1, 30, "Score:");
+    mvprintw(LINES - 1, 50, "Hits: 0");
+    mvprintw(LINES - 1, 70, "Str:");
+    mvprintw(LINES - 1, 90, "Gold:");
+    mvprintw(LINES - 1, 110, "Exp:");
+    mvprintw(LINES - 1, 130, "Ancient Keys:");
+
+    mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
+    if(floor_num == 4){
+        mvprintw(1, COLS - 30, "Press q to Finish the Game.");
+    }
+    mvprintw(LINES - 1, 37, "%d", gold);
+    mvprintw(LINES - 1, 96, "%d", gold);
+    mvprintw(LINES - 1, 75, "  ");
+    mvprintw(LINES - 1, 75, "%d", strength);
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
+            if(map[y][x].color_pair != 0){
                 attron(COLOR_PAIR(map[y][x].color_pair));
                 mvprintw(y, x, "%c", map[y][x].ch);
                 attroff(COLOR_PAIR(map[y][x].color_pair));
             }
-            if (map[y][x].ch == '=' && rooms[find_room(x, y)].explored == 1) {
+            if(map[y][x].ch == '=' && rooms[find_room(x, y)].explored == 1){
                 attroff(COLOR_PAIR(20));
                 mvprintw(y, x, "=");
             }
@@ -919,122 +915,122 @@ void print_map_with_colors(int floor_num) {
     if(rooms[find_room(staircases[floor_num].x, staircases[floor_num].y)].explored == 1){
         mvprintw(staircases[floor_num].y, staircases[floor_num].x, "<");
     }
-        for(int y = 0; y < LINES; y++) {
-            for(int x = 0; x < COLS; x++) {
-                if(map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.' && map[y][x].ch != 'O') {
-                    if(rooms[find_room(x, y)].explored == 1) {
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
+            if(map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.' && map[y][x].ch != 'O'){
+                if(rooms[find_room(x, y)].explored == 1){
+                    attron(COLOR_PAIR(map[y][x].color_pair));
+                    if(map[y][x].ch == '*'){
+                        attron(COLOR_PAIR(7));
+                    }
+                    if(map[y][x].ch == 'x'){
+                        attron(COLOR_PAIR(15));
+                    }
+                    if(map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
+                        attron(COLOR_PAIR(16));
+                    }
+                    if(map[y][x].ch == 'F' && map[y][x].color_pair == 20 && !map[y][x].color_check){
+                        int random = rand() % 6;
+                        if(random < 3){
+                            map[y][x].color_pair = 14;
+                        }
+                        else if(random == 3){
+                            map[y][x].color_pair = 7;
+                        }
+                        else if(random == 4){
+                            map[y][x].color_pair = 13;
+                        }
+                        else if(random == 5){
+                            map[y][x].color_pair = 10;
+                        }
+                        map[y][x].color_check = 1;
                         attron(COLOR_PAIR(map[y][x].color_pair));
-                        if(map[y][x].ch == '*') {
-                            attron(COLOR_PAIR(7));
-                        }
-                        if(map[y][x].ch == 'x') {
-                            attron(COLOR_PAIR(15));
-                        }
-                        if(map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S') {
-                            attron(COLOR_PAIR(16));
-                        }
-                        if(map[y][x].ch == 'F' && map[y][x].color_pair == 20 && !map[y][x].color_check) {
-                            int random = rand() % 6;
-                            if(random < 3) {
-                                map[y][x].color_pair = 14;
-                            } else if(random == 3) {
-                                map[y][x].color_pair = 7;
-                            } else if(random == 4) {
-                                map[y][x].color_pair = 13;
-                            } else if(random == 5) {
-                                map[y][x].color_pair = 10;
-                            }
-                            map[y][x].color_check = 1;
-                            attron(COLOR_PAIR(map[y][x].color_pair));
-                        }
-                        if(map[y][x].ch == '$' && map[y][x].color_pair == 20 && !map[y][x].color_check) {
-                            int random = rand() % 3;
-                            if(random == 0){
-                                map[y][x].color_pair = 10;
-                            }
-                            if(random == 1){
-                                map[y][x].color_pair = 18;
-                            }
-                            if(random == 2){
-                                map[y][x].color_pair = 1;
-                            }
-                            map[y][x].color_check = 1;
-                            attron(COLOR_PAIR(map[y][x].color_pair));
-                        }
-                        if(map[y][x].ch == '$') {
-                            attron(COLOR_PAIR(12));
-                        }
-                        if(map[y][x].ch == '=') {
-                            attron(COLOR_PAIR(21));
-                        }
                     }
-                    if(rooms[find_room(x, y)].explored == 1) {
-                        mvprintw(y, x, "%c", map[y][x].ch);
+                    if(map[y][x].ch == '$' && map[y][x].color_pair == 20 && !map[y][x].color_check){
+                        int random = rand() % 3;
+                        if(random == 0){
+                            map[y][x].color_pair = 10;
+                        }
+                        if(random == 1){
+                            map[y][x].color_pair = 18;
+                        }
+                        if(random == 2){
+                            map[y][x].color_pair = 1;
+                        }
+                        map[y][x].color_check = 1;
+                        attron(COLOR_PAIR(map[y][x].color_pair));
                     }
-                    attroff(COLOR_PAIR(map[y][x].color_pair));
+                    if(map[y][x].ch == '$'){
+                        attron(COLOR_PAIR(12));
+                    }
+                    if(map[y][x].ch == '='){
+                        attron(COLOR_PAIR(21));
+                    }
                 }
+                if(rooms[find_room(x, y)].explored == 1){
+                    mvprintw(y, x, "%c", map[y][x].ch);
+                }
+                attroff(COLOR_PAIR(map[y][x].color_pair));
             }
         }
+    }
 
-
-        attroff(COLOR_PAIR(20));
-        if ((mvinch(player.y + 1, player.x) & A_CHARTEXT) == '#' || (mvinch(player.y - 1, player.x) & A_CHARTEXT) == '#') {
-            for (int y = player.y - 5; y <= player.y + 5; y++) {
-                if (y < 0 || y >= LINES){
+    attroff(COLOR_PAIR(20));
+    if((mvinch(player.y + 1, player.x) & A_CHARTEXT) == '#' || (mvinch(player.y - 1, player.x) & A_CHARTEXT) == '#'){
+        for(int y = player.y - 5; y <= player.y + 5; y++){
+            if(y < 0 || y >= LINES){
+                continue;
+            }
+            for(int x = player.x - 5; x <= player.x + 5; x++){
+                if(x < 0 || x >= COLS){
                     continue;
                 }
-                for (int x = player.x - 5; x <= player.x + 5; x++) {
-                    if (x < 0 || x >= COLS){
-                        continue;
-                    }
-                    if ((mvinch(y, x) & A_CHARTEXT) == '#') {
-                        attron(COLOR_PAIR(21));
-                        mvprintw(y, x, "#");
-                        attroff(COLOR_PAIR(21));
-                        map[y][x].ch = '#';
-                        map[y][x].color_pair = 21;
-                    }
+                if((mvinch(y, x) & A_CHARTEXT) == '#'){
+                    attron(COLOR_PAIR(21));
+                    mvprintw(y, x, "#");
+                    attroff(COLOR_PAIR(21));
+                    map[y][x].ch = '#';
+                    map[y][x].color_pair = 21;
                 }
             }
         }
+    }
 
-        if ((mvinch(player.y, player.x + 1) & A_CHARTEXT) == '#' || (mvinch(player.y, player.x - 1) & A_CHARTEXT) == '#') {
-            for (int y = player.y - 5; y <= player.y + 5; y++) {
-                if (y < 0 || y >= LINES){
+    if((mvinch(player.y, player.x + 1) & A_CHARTEXT) == '#' || (mvinch(player.y, player.x - 1) & A_CHARTEXT) == '#'){
+        for(int y = player.y - 5; y <= player.y + 5; y++){
+            if(y < 0 || y >= LINES){
+                continue;
+            }
+            for(int x = player.x - 5; x <= player.x + 5; x++){
+                if(x < 0 || x >= COLS){
                     continue;
                 }
-                for (int x = player.x - 5; x <= player.x + 5; x++) {
-                    if (x < 0 || x >= COLS){
-                        continue;
-                    }
-                    if ((mvinch(y, x) & A_CHARTEXT) == '#') {
-                        attron(COLOR_PAIR(21));
-                        mvprintw(y, x, "#");
-                        attroff(COLOR_PAIR(21));
-                        map[y][x].ch = '#';
-                        map[y][x].color_pair = 21;
-                    }
+                if((mvinch(y, x) & A_CHARTEXT) == '#'){
+                    attron(COLOR_PAIR(21));
+                    mvprintw(y, x, "#");
+                    attroff(COLOR_PAIR(21));
+                    map[y][x].ch = '#';
+                    map[y][x].color_pair = 21;
                 }
             }
         }
+    }
 
-
-        if(map[player.y][player.x].ch == '+'){
-            mvprintw(player.y, player.x, "+");
-        }
-
+    if(map[player.y][player.x].ch == '+'){
+        mvprintw(player.y, player.x, "+");
+    }
         
-        for(int i = 0; i < 50; i++){
-            if(rooms[find_room(doors[i].x, doors[i].y)].explored == 0){
-                attron(COLOR_PAIR(20));
-            }
-            mvprintw(doors[i].y, doors[i].x, "+");
-            attroff(COLOR_PAIR(20));
+    for(int i = 0; i < 50; i++){
+        if(rooms[find_room(doors[i].x, doors[i].y)].explored == 0){
+            attron(COLOR_PAIR(20));
         }
-        print_password_doors();
+        mvprintw(doors[i].y, doors[i].x, "+");
+        attroff(COLOR_PAIR(20));
+    }
+    print_password_doors();
 }
 
-void print_full_map(int floor_num) {
+void print_full_map(int floor_num){
     mvprintw(LINES - 1, 30, "Score:");
     mvprintw(LINES - 1, 50, "Hits: 0");
     mvprintw(LINES - 1, 70, "Str:");
@@ -1043,7 +1039,7 @@ void print_full_map(int floor_num) {
     mvprintw(LINES - 1, 130, "Ancient Keys:");
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
-    if(floor_num == 4) {
+    if(floor_num == 4){
         mvprintw(1, COLS - 30, "Press q to Finish the Game.");
     }
     mvprintw(LINES - 1, 37, "%d", gold);
@@ -1051,9 +1047,9 @@ void print_full_map(int floor_num) {
     mvprintw(LINES - 1, 75, "  ");
     mvprintw(LINES - 1, 75, "%d", strength);
 
-    for (int y = 0; y < LINES; y++) {
-        for (int x = 0; x < COLS; x++) {
-            if (map[y][x].color_pair != 0) {
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
+            if(map[y][x].color_pair != 0){
                 attron(COLOR_PAIR(map[y][x].color_pair));
                 mvprintw(y, x, "%c", map[y][x].ch);
                 attroff(COLOR_PAIR(map[y][x].color_pair));
@@ -1061,23 +1057,23 @@ void print_full_map(int floor_num) {
         }
     }
 
-    for (int i = 0; i < room_count; i++) {
+    for(int i = 0; i < room_count; i++){
         int x_start = rooms[i].x_top_left;
         int y_start = rooms[i].y_top_left;
         int width = rooms[i].x_size;
         int height = rooms[i].y_size;
 
         mvprintw(y_start, x_start, "_");
-        for (int j = 1; j <= width; j++) {
+        for(int j = 1; j <= width; j++){
             move(y_start, x_start + j);
             printw("_");
         }
         mvprintw(y_start, x_start + width + 1, "_");
 
-        for (int j = 1; j <= height; j++) {
+        for(int j = 1; j <= height; j++){
             move(y_start + j, x_start);
             printw("|");
-            for (int k = 1; k <= width; k++) {
+            for(int k = 1; k <= width; k++){
                 mvprintw(y_start + j, x_start + k, ".");
             }
             move(y_start + j, x_start + width + 1);
@@ -1085,7 +1081,7 @@ void print_full_map(int floor_num) {
         }
 
         mvprintw(y_start + height + 1, x_start, "_");
-        for (int j = 1; j <= width; j++) {
+        for(int j = 1; j <= width; j++){
             move(y_start + height + 1, x_start + j);
             printw("_");
         }
@@ -1095,59 +1091,66 @@ void print_full_map(int floor_num) {
     mvprintw(player.y, player.x, "\U0001FBC5");
     mvprintw(staircases[floor_num].y, staircases[floor_num].x, "<");
 
-    for (int y = 0; y < LINES; y++) {
-        for (int x = 0; x < COLS; x++) {
-            if (map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.' && map[y][x].ch != 'O') {
-                if (map[y][x].ch == '#') {
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
+            if(map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.' && map[y][x].ch != 'O'){
+                if(map[y][x].ch == '#'){
                     attron(COLOR_PAIR(21));
-                } else if (map[y][x].ch == '+') {
+                }
+                else if(map[y][x].ch == '+'){
                     attron(COLOR_PAIR(21));
-                } else if (map[y][x].color_pair != 20) {
+                }
+                else if(map[y][x].color_pair != 20){
                     attron(COLOR_PAIR(map[y][x].color_pair));
                 }
-                if (map[y][x].ch == '*') {
+                if(map[y][x].ch == '*'){
                     attron(COLOR_PAIR(7));
                 }
-                if (map[y][x].ch == 'x') {
+                if(map[y][x].ch == 'x'){
                     attron(COLOR_PAIR(15));
                 }
-                if (map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S') {
+                if(map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
                     attron(COLOR_PAIR(16));
                 }
-                if (map[y][x].ch == 'F' && !map[y][x].color_check) {
+                if(map[y][x].ch == 'F' && !map[y][x].color_check){
                     int random = rand() % 6;
-                    if (random < 3) {
+                    if(random < 3){
                         map[y][x].color_pair = 14;
-                    } else if (random == 3) {
+                    }
+                    else if(random == 3){
                         map[y][x].color_pair = 7;
-                    } else if (random == 4) {
+                    }
+                    else if(random == 4){
                         map[y][x].color_pair = 13;
-                    } else if (random == 5) {
+                    }
+                    else if(random == 5){
                         map[y][x].color_pair = 10;
                     }
                     map[y][x].color_check = 1;
                     attron(COLOR_PAIR(map[y][x].color_pair));
                 }
-                if (map[y][x].ch == '$' && !map[y][x].color_check) {
+                if(map[y][x].ch == '$' && !map[y][x].color_check){
                     int random = rand() % 3;
-                    if (random == 0) {
+                    if(random == 0){
                         map[y][x].color_pair = 10;
-                    } else if (random == 1) {
+                    }
+                    else if(random == 1){
                         map[y][x].color_pair = 18;
-                    } else if (random == 2) {
+                    }
+                    else if(random == 2){
                         map[y][x].color_pair = 1;
                     }
                     map[y][x].color_check = 1;
                     attron(COLOR_PAIR(map[y][x].color_pair));
                 }
-                if (map[y][x].ch == '$') {
+                if(map[y][x].ch == '$'){
                     attron(COLOR_PAIR(12));
                 }
-                if (map[y][x].ch == '=') {
+                if(map[y][x].ch == '='){
                     attron(COLOR_PAIR(21));
                 }
                 mvprintw(y, x, "%c", map[y][x].ch);
-                if (map[y][x].ch != '#' && map[y][x].ch != '+') {
+                if(map[y][x].ch != '#' && map[y][x].ch != '+'){
                     attroff(COLOR_PAIR(map[y][x].color_pair));
                 }
             }
@@ -1155,86 +1158,84 @@ void print_full_map(int floor_num) {
     }
 
     init_pair(21, COLOR_WHITE, COLOR_BLACK);
-    if (map[player.y][player.x].ch == '+') {
+    if(map[player.y][player.x].ch == '+'){
         attron(COLOR_PAIR(21));
         mvprintw(player.y, player.x, "+");
         
     }
 
-    for (int i = 0; i < 50; i++) {
+    for(int i = 0; i < 50; i++){
         attron(COLOR_PAIR(21));
         mvprintw(doors[i].y, doors[i].x, "+");
     }
     print_password_doors();
 }
 
-
-
-void initialize_map() {
+void initialize_map(){
     map = malloc(LINES * sizeof(character *));
-    if (map == NULL) {
+    if(map == NULL){
         fprintf(stderr, "Error allocating memory for map\n");
         exit(1);
     }
-    for (int i = 0; i < LINES; i++) {
+    for(int i = 0; i < LINES; i++){
         map[i] = malloc(COLS * sizeof(character));
-        if (map[i] == NULL) {
+        if(map[i] == NULL){
             fprintf(stderr, "Error allocating memory for map[%d]\n", i);
             exit(1);
         }
     }
 }
 
-void reveal_room_by_window(int x, int y) {
+void reveal_room_by_window(int x, int y){
     int wall_x, wall_y;
-    if(map[y][x + 1].ch == '.') {
+    if(map[y][x + 1].ch == '.'){
         wall_x = x;
         wall_y = y;
-        while(wall_x < COLS - 1 && map[wall_y][wall_x].ch != '|') {
+        while(wall_x < COLS - 1 && map[wall_y][wall_x].ch != '|'){
             wall_x++;
         }
-        if(wall_x >= 0 && wall_x < COLS) {
+        if(wall_x >= 0 && wall_x < COLS){
             int room = find_room(wall_x - 1, wall_y);
-            if (room != -1) {
+            if(room != -1){
                 rooms[room].explored = 1;
             }
         }
     }
-    if(map[y][x - 1].ch == '.') {
+    if(map[y][x - 1].ch == '.'){
         wall_x = x;
         wall_y = y;
-        while(wall_x > 0 && map[wall_y][wall_x].ch != '|') {
+        while(wall_x > 0 && map[wall_y][wall_x].ch != '|'){
             wall_x--; 
         }
-        if(wall_x >= 0 && wall_x < COLS) {
+        if(wall_x >= 0 && wall_x < COLS){
             int room = find_room(wall_x + 1, wall_y);
-            if (room != -1) {
+            if(room != -1){
                 rooms[room].explored = 1;
             }
         }
     }
-    if(map[y + 1][x].ch == '.') {
+    if(map[y + 1][x].ch == '.'){
         wall_x = x;
         wall_y = y;
-        while(wall_y > 0 && map[wall_y][wall_x].ch != '_') {
+        while(wall_y > 0 && map[wall_y][wall_x].ch != '_'){
             wall_y--;
         }
-        if(wall_y >= 0 && wall_y < LINES) {
+        if(wall_y >= 0 && wall_y < LINES){
             int room = find_room(wall_x, wall_y + 1);
-            if (room != -1) {
+            if(room != -1){
                 rooms[room].explored = 1;
             }
         }
     }
-    if(map[y - 1][x].ch == '.') {
+    if(map[y - 1][x].ch == '.'){
         wall_x = x;
         wall_y = y;
-        while(wall_y < LINES - 1 && map[wall_y][wall_x].ch != '_') {
+        while(wall_y < LINES - 1 && map[wall_y][wall_x].ch != '_'){
             wall_y++;
         }
-        if(wall_y >= 0 && wall_y < LINES) {
+        if(wall_y >= 0 && wall_y < LINES){
             int room_index = find_room(wall_x, wall_y - 1);
-            if (room_index != -1) {
+            if(room_index != -1){
                 rooms[room_index].explored = 1;
             }
         }
@@ -1244,7 +1245,7 @@ void reveal_room_by_window(int x, int y) {
 int game_pause(){
     char *options[3] ={"Resume", "Save and Quit", "Quit"};
     int check = 0, highlight = 0;
-    while (!check){
+    while(!check){
         clear();
         attroff(A_REVERSE);
         attron(A_BOLD | A_UNDERLINE);
@@ -1284,7 +1285,8 @@ int game_pause(){
             }
             else if(highlight == 1){
                 return 1;
-            }else if(highlight == 2){
+            }
+            else if(highlight == 2){
                 return 2;
             }
         }
@@ -1303,7 +1305,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     move(0, 0);
     printw("\n");
 
-        init_pair(21, COLOR_WHITE, COLOR_BLACK);
+    init_pair(21, COLOR_WHITE, COLOR_BLACK);
     
     while(fgets(line, sizeof(line), map_file) != NULL){
         if(strstr(line, "Map:") != NULL){
@@ -1325,10 +1327,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     init_pair(20, COLOR_BLACK, COLOR_BLACK);
     initialize_map();
     
-
     int door_num = 0;
-    for (int y = 0; y < LINES; y++) {
-        for (int x = 0; x < COLS; x++) {
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
             map[y][x].ch = (mvinch(y, x) & A_CHARTEXT);
             map[y][x].color_pair = PAIR_NUMBER(mvinch(y, x) & A_COLOR);
             if(map[y][x].ch == '+'){
@@ -1338,17 +1339,15 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             }
         }
     }
-    
 
-    for (int y = 0; y < LINES; y++) {
-        for (int x = 0; x < COLS; x++) {
-            if (map[y][x].ch == '+' || map[y][x].ch == '=') {
-                if ((x > 0 && (map[y][x - 1].ch == '.' || map[y][x - 1].ch == 'O')) || 
-                    (x < COLS - 1 && (map[y][x + 1].ch == '.' || map[y][x + 1].ch == 'O'))) {
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
+            if(map[y][x].ch == '+' || map[y][x].ch == '='){
+                if((x > 0 && (map[y][x - 1].ch == '.' || map[y][x - 1].ch == 'O')) || 
+                    (x < COLS - 1 && (map[y][x + 1].ch == '.' || map[y][x + 1].ch == 'O'))){
                     mvprintw(y, x, "|");
                 }
-                else if ((y > 0 && (map[y - 1][x].ch == '.' || map[y - 1][x].ch == 'O')) || 
-                        (y < LINES - 1 && (map[y + 1][x].ch == '.' || map[y + 1][x].ch == 'O'))) {
+                else if((y > 0 && (map[y - 1][x].ch == '.' || map[y - 1][x].ch == 'O')) || (y < LINES - 1 && (map[y + 1][x].ch == '.' || map[y + 1][x].ch == 'O'))){
                     mvprintw(y, x, "_");
                 }
             }
@@ -1443,8 +1442,8 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     generate_food();
     generate_spell();
     generate_ancient_key();
-    for (int y = 0; y < LINES; y++) {
-        for (int x = 0; x < COLS; x++) {
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
             map[y][x].ch = (mvinch(y, x) & A_CHARTEXT);
             map[y][x].color_pair = PAIR_NUMBER(mvinch(y, x) & A_COLOR);
             
@@ -1502,7 +1501,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
                 password_doors[i].x_button = x - 1;
                 password_doors[i].y_button = y - 1;
             }
-            else {
+            else{
                 password_doors[i].x_button = x; 
                 password_doors[i].y_button = y;
             }
@@ -1516,7 +1515,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
 
     attroff(COLOR_PAIR(8));
 
-    
     char previous_under = ' ';
     
     long int current_time, hunger_full_start_time;
@@ -1740,7 +1738,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         
         for(int y = 0; y < LINES; y++){
             for(int x = 0; x < COLS; x++){
-                if(map[y][x].ch == '=' && find_room(x, y) == find_room(player.x, player.y)) {
+                if(map[y][x].ch == '=' && find_room(x, y) == find_room(player.x, player.y)){
                     reveal_room_by_window(x, y);
                     
                 }
@@ -1879,10 +1877,10 @@ void read_last_game_data(char* filename){
     fclose(file);
 }
 
-void save_game(char* filename) {
+void save_game(char* filename){
     FILE *file = fopen(filename, "r+");
     
-    if (file == NULL) {
+    if(file == NULL){
         perror("Error opening file");
         return;
     }

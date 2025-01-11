@@ -16,7 +16,6 @@
 #define COLOR_SILVER 19
 #define COLOR_GOLD 20
 
-
 int main(){
     setlocale(LC_ALL, "");
     initscr();
