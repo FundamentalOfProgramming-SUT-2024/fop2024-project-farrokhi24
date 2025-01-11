@@ -325,7 +325,6 @@ void signup(){
 
     if(choice == 1){
         clear();
-        
         FILE *file = fopen("user_data.txt", "a");
         fprintf(file, "Username: %s\n", username);
         fprintf(file, "Password: %s\n", password);
