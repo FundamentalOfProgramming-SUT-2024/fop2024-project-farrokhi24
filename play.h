@@ -1521,7 +1521,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     int hunger_full = 0;
     start_time = time(NULL);
     
-    mvprintw(staircases[floor_num].y, staircases[floor_num].x, "<");
+    print_map_with_colors(floor_num);
     
     while(1){
         current_time = time(NULL);
