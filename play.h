@@ -554,13 +554,10 @@ void generate_ancient_key(){
         x = rand_with_range(1, COLS);
         y = rand_with_range(1, LINES);
         if((mvinch(y, x) & A_CHARTEXT) == '.'){
-            if(rooms[find_room(x, y)].explored == 0){
-                attron(COLOR_PAIR(20));
-            }
             ancient_key.x = x;
             ancient_key.y = y;
             ancient_key.full = 1;
-            mvprintw(y, x, "\U000025B3");
+            //mvprintw(y, x, "\U000025B3");
             i++;
         }
     }
@@ -1028,6 +1025,15 @@ void print_map_with_colors(int floor_num){
         attroff(COLOR_PAIR(20));
     }
     print_password_doors();
+    if(ancient_key.full == 1){
+        attron(COLOR_PAIR(7));
+        if(rooms[find_room(ancient_key.x, ancient_key.y)].explored == 0){
+            attron(COLOR_PAIR(20));
+        }
+        mvprintw(ancient_key.y, ancient_key.x, "\U000025B3");
+        attroff(COLOR_PAIR(7));
+        attroff(COLOR_PAIR(20));
+    }
 }
 
 void print_full_map(int floor_num){
