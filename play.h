@@ -557,7 +557,6 @@ void generate_ancient_key(){
             ancient_key.x = x;
             ancient_key.y = y;
             ancient_key.full = 1;
-            //mvprintw(y, x, "\U000025B3");
             i++;
         }
     }
@@ -1300,6 +1299,7 @@ int game_pause(){
 }
 
 int enter_floor(char *username, char color, char difficulty, int floor_num){
+    clear();
     start_time = time(NULL);
     char filename[100];
     snprintf(filename, sizeof(filename), "%s.txt", username);
@@ -1314,13 +1314,17 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     init_pair(21, COLOR_WHITE, COLOR_BLACK);
     
     while(fgets(line, sizeof(line), map_file) != NULL){
-        if(strstr(line, "Map:") != NULL){
+        char map_str[20];
+        snprintf(map_str, sizeof(map_str), "Map%d:", floor_num);
+        char format_str[20];
+        snprintf(format_str, sizeof(format_str), "Room Count%d: %%d", floor_num);
+        if(strstr(line, map_str) != NULL){
             check = 1;
             continue;
         }
-        if(sscanf(line, "Room Count: %d", &room_count) == 1){
+        if(sscanf(line, format_str, &room_count) == 1) {
             continue;
-        }
+        } 
         if(check){
             int len = strlen(line);
             if(len > 0 && line[len - 1] == '\n'){
@@ -1422,6 +1426,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         } while(character != '.');
         player.under.ch = '.';
     }
+    else{
+        player.x = staircases[floor_num].x;
+        player.y = staircases[floor_num].y;
+    }
     attron(COLOR_PAIR(5));
     mvprintw(player.y, player.x, "\U0001FBC5");
     attroff(COLOR_PAIR(5));
@@ -1434,11 +1442,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
             if(map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.' && map[y][x].ch != 'O'){
-                if(rooms[find_room(x, y)].explored == 1){
-                    attroff(COLOR_PAIR(20));
-                }
                 mvprintw(y, x, "%c", map[y][x].ch);
-                attron(COLOR_PAIR(20));
             }
         }
     }

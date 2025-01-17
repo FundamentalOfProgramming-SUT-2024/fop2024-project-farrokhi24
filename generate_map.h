@@ -183,9 +183,8 @@ void generate_windows(){
     }
 }
 
-void generate_map(char *username, char difficulty){
+void generate_floor_map(char *username, char difficulty, int floor_num){
     clear();
-    srand(time(0));
 
     struct room rooms[20];
     int room_count = 0;
@@ -360,8 +359,8 @@ void generate_map(char *username, char difficulty){
     char filename[100];
     snprintf(filename, sizeof(filename), "%s.txt", username);
     FILE *map_file = fopen(filename, "a");
-    fprintf(map_file, "Room Count: %d\n", room_count);
-    fprintf(map_file, "Map:");
+    fprintf(map_file, "Room Count%d: %d\n", floor_num, room_count);
+    fprintf(map_file, "Map%d:", floor_num);
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
             fprintf(map_file, "%c", mvinch(y, x) & A_CHARTEXT);
@@ -371,6 +370,13 @@ void generate_map(char *username, char difficulty){
     
     fclose(map_file);
     clear();
+}
+
+void generate_map(char *username, char difficulty){
+    srand(time(0));
+    for(int i = 1; i <= 4; i++){
+        generate_floor_map(username, difficulty, i);
+    }
 }
 
 #endif
