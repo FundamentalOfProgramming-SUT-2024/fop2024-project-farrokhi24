@@ -564,7 +564,7 @@ void generate_spell(){
         if(rooms[i].theme == 2){
             int j = 0;
             int count = 0;
-            while(j < 10 && count < 100){
+            while(j < 10 && count < 15){
                 int x = rooms[i].x_top_left + rand_with_range(1, rooms[i].x_size);
                 int y = rooms[i].y_top_left + rand_with_range(1, rooms[i].y_size);
                 if((mvinch(y, x) & A_CHARTEXT) == '.'){
@@ -1509,7 +1509,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         if(random_theme % 10 < 5){
             rooms[i].theme = 1; //normal
         }
-        else if(random_theme % 10 < 8){
+        else if(random_theme % 10 == 8){
             rooms[i].theme = 2; //enchant
         }
         else{
@@ -1558,7 +1558,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     attroff(COLOR_PAIR(5));
     mvprintw(0, 0, "%d",find_room(player.x, player.y));
 
-    rooms[find_room(player.x, player.y)].explored = 1;
+    if(rooms[find_room(player.x, player.y)].theme != 3){
+        rooms[find_room(player.x, player.y)].explored = 1;
+    }
     print_rooms();
 
     attron(COLOR_PAIR(20));
@@ -2024,7 +2026,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         
         current_room = find_room(player.x, player.y);
         if(current_room != -1){
-            rooms[current_room].explored = 1;
+            if(rooms[current_room].theme != 3){
+                mvprintw(0,0,"ROOM %d EXPLORED, TYPE=%d", current_room, rooms[current_room].theme);
+                rooms[current_room].explored = 1;
+            }
             if(current_room != prev_room){
                 if(rooms[current_room].theme == 2){
                     play_music("enchant.mp3");
@@ -2038,7 +2043,63 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             play_music("track_1.mp3");
         }
         prev_room = current_room;
-        
+        if(rooms[current_room].theme == 3){
+            for(int delta_x = -1; delta_x <= 1; delta_x++){
+                for(int delta_y = -1; delta_y <= 1; delta_y++){
+                    int x = player.x + delta_x;
+                    int y = player.y + delta_y;
+                    if(map[y][x].color_pair != 0){
+                        attron(COLOR_PAIR(21));
+                        
+                        if(map[y][x].ch == '*'){
+                            attron(COLOR_PAIR(7));
+                        }
+                        if(map[y][x].ch == 'x'){
+                            attron(COLOR_PAIR(15));
+                        }
+                        if(map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
+                            attron(COLOR_PAIR(16));
+                        }
+                        if(map[y][x].ch == 'F'){
+                            if(!map[y][x].color_check){
+                                int random = rand() % 6;
+                                if(random < 3){
+                                    map[y][x].color_pair = 14;
+                                }
+                                else if(random == 3){
+                                    map[y][x].color_pair = 7;
+                                }
+                                else if(random == 4){
+                                    map[y][x].color_pair = 13;
+                                }
+                                else if(random == 5){
+                                    map[y][x].color_pair = 10;
+                                }
+                                map[y][x].color_check = 1;
+                            }
+                            attron(COLOR_PAIR(map[y][x].color_pair));
+                        }   
+                        if(map[y][x].ch == '$' && !map[y][x].color_check){
+                            int random = rand() % 3;
+                            if(random == 0){
+                                map[y][x].color_pair = 10;
+                            }
+                            else if(random == 1){
+                                map[y][x].color_pair = 18;
+                            }
+                            else if(random == 2){
+                                map[y][x].color_pair = 1;
+                            }
+                            map[y][x].color_check = 1;
+                            attron(COLOR_PAIR(map[y][x].color_pair));
+                        }
+                        //attron(COLOR_PAIR(map[y][x].color_pair));
+                        mvprintw(y, x, "%c", map[y][x].ch);
+                        attroff(COLOR_PAIR(map[y][x].color_pair));
+                    }
+                }
+            }
+        }
     }
 
     clear();
