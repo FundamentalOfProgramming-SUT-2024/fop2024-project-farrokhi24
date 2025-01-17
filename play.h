@@ -558,6 +558,40 @@ void generate_spell(){
             i++;
         }
     }
+
+    int j = 0;
+    for(int i = 0; i < room_count; i++){
+        if(rooms[i].theme == 2){
+            int j = 0;
+            int count = 0;
+            while(j < 10 && count < 100){
+                int x = rooms[i].x_top_left + rand_with_range(1, rooms[i].x_size);
+                int y = rooms[i].y_top_left + rand_with_range(1, rooms[i].y_size);
+                if((mvinch(y, x) & A_CHARTEXT) == '.'){
+                    int random = rand() % 3;
+                    if(random == 0){
+                        attron(COLOR_PAIR(10));
+                        map[y][x].color_pair = 10;
+                    }
+                    else if(random == 1){
+                        attron(COLOR_PAIR(18));
+                        map[y][x].color_pair = 18;
+                    }
+                    else if(random == 2){
+                        attron(COLOR_PAIR(1));
+                        map[y][x].color_pair = 1;
+                    }
+                    if(rooms[find_room(x, y)].explored == 0){
+                        attron(COLOR_PAIR(20));
+                    }
+                    mvprintw(y, x, "$");
+                    map[y][x].ch = '$';
+                    j++;
+                }
+                count++;
+            }
+        }
+    }
 }
 
 void generate_ancient_key(){
@@ -583,10 +617,7 @@ int check_trap(int x, int y, struct point *traps, int trap_count, int *strength)
         if(traps[i].x == x && traps[i].y == y){
             mvprintw(0, 0, "You Have Stepped on a Trap.");
             (*strength)--;
-            int c;
-            while((c = getch()) != ' '){
-                c = getch();
-            }
+            getch();
             mvprintw(0, 0, "                           ");
             return i;
         }
@@ -971,9 +1002,6 @@ void print_map_with_colors(int floor_num){
                         map[y][x].color_check = 1;
                         attron(COLOR_PAIR(map[y][x].color_pair));
                     }
-                    if(map[y][x].ch == '$'){
-                        attron(COLOR_PAIR(12));
-                    }
                     if(map[y][x].ch == '='){
                         attron(COLOR_PAIR(21));
                     }
@@ -1098,6 +1126,24 @@ void print_map_with_colors(int floor_num){
         attroff(COLOR_PAIR(7));
         attroff(COLOR_PAIR(20));
     }
+    mvprintw(LINES - 1, 30, "Score:");
+    mvprintw(LINES - 1, 50, "Hits: 0");
+    mvprintw(LINES - 1, 70, "Str:");
+    mvprintw(LINES - 1, 90, "Gold:");
+    mvprintw(LINES - 1, 110, "Exp:");
+    mvprintw(LINES - 1, 130, "Ancient Keys:");
+
+    mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
+    if(floor_num == 4){
+        mvprintw(1, COLS - 30, "Press q to Finish the Game.");
+    }
+    mvprintw(LINES - 1, 37, "%d", gold);
+    mvprintw(LINES - 1, 96, "%d", gold);
+    mvprintw(LINES - 1, 75, "  ");
+    mvprintw(LINES - 1, 75, "%d", strength);
+    mvprintw(LINES - 1, 96, "%d", gold);
+    mvprintw(LINES - 1, 75, "%d", strength);
+    mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
 }
 
 void print_full_map(int floor_num){
@@ -1212,9 +1258,6 @@ void print_full_map(int floor_num){
                     }
                     map[y][x].color_check = 1;
                     attron(COLOR_PAIR(map[y][x].color_pair));
-                }
-                if(map[y][x].ch == '$'){
-                    attron(COLOR_PAIR(12));
                 }
                 if(map[y][x].ch == '='){
                     attron(COLOR_PAIR(21));
@@ -1861,44 +1904,80 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             gold++;
+            print_map_with_colors(floor_num);
+            mvprintw(0, 0, "You Found Gold.");
+            getch();
+            mvprintw(0, 0, "               ");
         }
         if(player.under.ch == 'x' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             gold += 10;
+            print_map_with_colors(floor_num);
+            mvprintw(0, 0, "You Found Black Gold.");
+            getch();
+            mvprintw(0, 0, "                     ");
         }
         if(player.under.ch == 'F' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
+            print_map_with_colors(floor_num);
+            mvprintw(0, 0, "You Found Food.");
+            getch();
+            mvprintw(0, 0, "               ");
         }
         if(player.under.ch == 'M' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[0]++;
+            print_map_with_colors(floor_num);
+            mvprintw(0, 0, "You Found a Mace.");
+            getch();
+            mvprintw(0, 0, "                 ");
         }
         if(player.under.ch == 'D' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[1]++;
+            print_map_with_colors(floor_num);
+            mvprintw(0, 0, "You Found a Dagger.");
+            getch();
+            mvprintw(0, 0, "                   ");
         }
         if(player.under.ch == 'W' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[2]++;
+            print_map_with_colors(floor_num);
+            mvprintw(0, 0, "You Found a Magic Wand.");
+            getch();
+            mvprintw(0, 0, "                       ");
         }
         if(player.under.ch == 'A' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[3]++;
+            print_map_with_colors(floor_num);
+            mvprintw(0, 0, "You Found a Normal Arrow.");
+            getch();
+            mvprintw(0, 0, "                         ");
         }
         if(player.under.ch == 'S' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[4]++;
+            print_map_with_colors(floor_num);
+            mvprintw(0, 0, "You Found a Sword.");
+            getch();
+            mvprintw(0, 0, "                  ");
         }
         if(player.under.ch == '$' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
+            print_map_with_colors(floor_num);
+            mvprintw(0, 0, "You Found a Spell.");
+            getch();
+            mvprintw(0, 0, "                  ");
         }
         if(player.under.ch == '<'){
             mvprintw(player.y, player.x, "\U0001FBC5");
@@ -1944,19 +2023,18 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         }
         
         current_room = find_room(player.x, player.y);
-        if(current_room != -1) {
+        if(current_room != -1){
             rooms[current_room].explored = 1;
-            mvprintw(0, 0, "current room type: %d", rooms[current_room].theme);
-            if(current_room != prev_room) {
-                if(rooms[current_room].theme == 2) {
+            if(current_room != prev_room){
+                if(rooms[current_room].theme == 2){
                     play_music("enchant.mp3");
                 }
-                else if(rooms[current_room].theme == 3) {
+                else if(rooms[current_room].theme == 3){
                     play_music("nightmare.mp3");
                 }
             }
         } 
-        else if(player.under.ch == '#' && prev_room != -1 && rooms[prev_room].theme != 1) {
+        else if(player.under.ch == '#' && prev_room != -1 && rooms[prev_room].theme != 1){
             play_music("track_1.mp3");
         }
         prev_room = current_room;
