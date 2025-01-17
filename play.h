@@ -972,7 +972,6 @@ void print_map_with_colors(int floor_num){
     }
 
     attroff(COLOR_PAIR(20));
-    // Vertical check upward
     int hallway_check = 1;
     for(int y = player.y - 1; y >= player.y - 5 && y >= 0; y--){
         if((mvinch(y, player.x) & A_CHARTEXT) != '#'){
