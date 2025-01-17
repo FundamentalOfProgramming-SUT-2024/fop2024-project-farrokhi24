@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include "music.h"
 
 struct point{
     int x;
@@ -391,6 +392,20 @@ int find_room(int x, int y){
         }
     }
     return -1;
+}
+
+void generate_pillars(){
+    int pillar_count = rand_with_range(5, 10);
+    int i = 0;
+    int x, y;
+    while(i < pillar_count){
+        x = rand_with_range(1, COLS);
+        y = rand_with_range(1, LINES);
+        if(mvinch(y, x) == '.' && !is_neighbours_with('+', x, y) && !is_neighbours_with('=', x, y)){
+            mvprintw(y, x, "O");
+            i++;
+        }
+    }
 }
 
 void generate_staircase(int floor_num){
@@ -979,6 +994,7 @@ void print_map_with_colors(int floor_num){
             break;
         }
     }
+
     if(hallway_check){
         for(int y = player.y - 1; y >= player.y - 5 && y >= 0; y--){
             attron(COLOR_PAIR(21));
@@ -996,6 +1012,7 @@ void print_map_with_colors(int floor_num){
             break;
         }
     }
+
     if(hallway_check){
         for(int y = player.y + 1; y <= player.y + 5 && y < LINES; y++){
             attron(COLOR_PAIR(21));
@@ -1013,6 +1030,7 @@ void print_map_with_colors(int floor_num){
             break;
         }
     }
+
     if(hallway_check){
         for(int x = player.x - 1; x >= player.x - 5 && x >= 0; x--){
             attron(COLOR_PAIR(21));
@@ -1030,6 +1048,7 @@ void print_map_with_colors(int floor_num){
             break;
         }
     }
+
     if(hallway_check){
         for(int x = player.x + 1; x <= player.x + 5 && x < COLS; x++){
             attron(COLOR_PAIR(21));
@@ -1037,6 +1056,24 @@ void print_map_with_colors(int floor_num){
             attroff(COLOR_PAIR(21));
             map[player.y][x].ch = '#';
             map[player.y][x].color_pair = 21;
+        }
+    }
+
+    for(int y = player.y - 1; y <= player.y + 1; y++){
+        if(y < 0 || y >= LINES){
+            continue;
+        }
+        for(int x = player.x - 1; x <= player.x + 1; x++){
+            if(x < 0 || x >= COLS){
+                continue;
+            }
+            if((mvinch(y, x) & A_CHARTEXT) == '#'){
+                attron(COLOR_PAIR(21));
+                mvprintw(y, x, "#");
+                attroff(COLOR_PAIR(21));
+                map[y][x].ch = '#';
+                map[y][x].color_pair = 21;
+            }
         }
     }
 
@@ -1423,6 +1460,21 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             
         }
     }
+
+    for(int i = 0; i < room_count; i++){
+        int random_theme = rand();
+        if(random_theme % 10 < 5){
+            rooms[i].theme = 1; //normal
+        }
+        else if(random_theme % 10 < 8){
+            rooms[i].theme = 2; //enchant
+        }
+        else{
+            rooms[i].theme = 3; //nightmare
+        }
+
+    }
+
     clear();
     print_rooms();
     
@@ -1475,6 +1527,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         }
     }
     attroff(COLOR_PAIR(20));
+    generate_pillars();
     generate_gold();
     generate_weapon();
     generate_food();
@@ -1560,7 +1613,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     start_time = time(NULL);
     
     print_map_with_colors(floor_num);
-    
+    int current_room, prev_room = -1;
     while(1){
         current_time = time(NULL);
         
@@ -1804,46 +1857,46 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         
         previous_under = player.under.ch;
 
-        if(player.under.ch == '*' && g_check == 0){
+        if(player.under.ch == '*' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             gold++;
         }
-        if(player.under.ch == 'x' && g_check == 0){
+        if(player.under.ch == 'x' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             gold += 10;
         }
-        if(player.under.ch == 'F' && g_check == 0){
+        if(player.under.ch == 'F' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
         }
-        if(player.under.ch == 'M' && g_check == 0){
+        if(player.under.ch == 'M' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[0]++;
         }
-        if(player.under.ch == 'D' && g_check == 0){
+        if(player.under.ch == 'D' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[1]++;
         }
-        if(player.under.ch == 'W' && g_check == 0){
+        if(player.under.ch == 'W' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[2]++;
         }
-        if(player.under.ch == 'A' && g_check == 0){
+        if(player.under.ch == 'A' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[3]++;
         }
-        if(player.under.ch == 'S' && g_check == 0){
+        if(player.under.ch == 'S' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[4]++;
         }
-        if(player.under.ch == '$' && g_check == 0){
+        if(player.under.ch == '$' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
         }
@@ -1876,7 +1929,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             }
         }
 
-        if(ancient_key.x == player.x && ancient_key.y == player.y && ancient_key.full == 1 && g_check == 0){
+        if(ancient_key.x == player.x && ancient_key.y == player.y && ancient_key.full == 1 && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             ancient_key.full = 0;
             ancient_key_count += 2;
@@ -1889,11 +1942,24 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             map[player.y][player.x].color_pair = 21;
             map[player.y][player.x].ch = '^';
         }
-
-        int current_room = find_room(player.x, player.y);
-        if(current_room != -1){
+        
+        current_room = find_room(player.x, player.y);
+        if(current_room != -1) {
             rooms[current_room].explored = 1;
+            mvprintw(0, 0, "current room type: %d", rooms[current_room].theme);
+            if(current_room != prev_room) {
+                if(rooms[current_room].theme == 2) {
+                    play_music("enchant.mp3");
+                }
+                else if(rooms[current_room].theme == 3) {
+                    play_music("nightmare.mp3");
+                }
+            }
+        } 
+        else if(player.under.ch == '#' && prev_room != -1 && rooms[prev_room].theme != 1) {
+            play_music("track_1.mp3");
         }
+        prev_room = current_room;
         
     }
 

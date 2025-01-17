@@ -137,20 +137,6 @@ void print_hallway(struct hallway *hallways, int hallway_count){
     }
 }
 
-void generate_pillars(){
-    int pillar_count = rand_with_range(5, 10);
-    int i = 0;
-    int x, y;
-    while(i < pillar_count){
-        x = rand_with_range(1, COLS);
-        y = rand_with_range(1, LINES);
-        if(mvinch(y, x) == '.' && !is_neighbours_with('+', x, y) && !is_neighbours_with('=', x, y)){
-            mvprintw(y, x, "O");
-            i++;
-        }
-    }
-}
-
 int corner(int x, int y){
     if(mvinch(y, x) == '|'){
         if(mvinch(y - 1, x) == '_' || mvinch(y + 1, x) == '_'){
@@ -243,7 +229,6 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
     }
 
     generate_windows();
-    generate_pillars();
     
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){

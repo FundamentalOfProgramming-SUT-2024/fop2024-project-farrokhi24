@@ -1,3 +1,6 @@
+#ifndef MUSIC_H
+#define MUSIC_H
+
 #include <ncurses.h>
 #include <string.h>
 #include <SDL2/SDL.h>
@@ -80,3 +83,5 @@ void music(){
     clrtoeol();
     refresh();
 }
+
+#endif
