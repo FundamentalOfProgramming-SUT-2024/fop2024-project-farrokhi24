@@ -972,43 +972,72 @@ void print_map_with_colors(int floor_num){
     }
 
     attroff(COLOR_PAIR(20));
-    if((mvinch(player.y + 1, player.x) & A_CHARTEXT) == '#' || (mvinch(player.y - 1, player.x) & A_CHARTEXT) == '#'){
-        for(int y = player.y - 5; y <= player.y + 5; y++){
-            if(y < 0 || y >= LINES){
-                continue;
-            }
-            for(int x = player.x - 5; x <= player.x + 5; x++){
-                if(x < 0 || x >= COLS){
-                    continue;
-                }
-                if((mvinch(y, x) & A_CHARTEXT) == '#'){
-                    attron(COLOR_PAIR(21));
-                    mvprintw(y, x, "#");
-                    attroff(COLOR_PAIR(21));
-                    map[y][x].ch = '#';
-                    map[y][x].color_pair = 21;
-                }
-            }
+    // Vertical check upward
+    int hallway_check = 1;
+    for(int y = player.y - 1; y >= player.y - 5 && y >= 0; y--){
+        if((mvinch(y, player.x) & A_CHARTEXT) != '#'){
+            hallway_check = 0;
+            break;
+        }
+    }
+    if(hallway_check){
+        for(int y = player.y - 1; y >= player.y - 5 && y >= 0; y--){
+            attron(COLOR_PAIR(21));
+            mvprintw(y, player.x, "#");
+            attroff(COLOR_PAIR(21));
+            map[y][player.x].ch = '#';
+            map[y][player.x].color_pair = 21;
         }
     }
 
-    if((mvinch(player.y, player.x + 1) & A_CHARTEXT) == '#' || (mvinch(player.y, player.x - 1) & A_CHARTEXT) == '#'){
-        for(int y = player.y - 5; y <= player.y + 5; y++){
-            if(y < 0 || y >= LINES){
-                continue;
-            }
-            for(int x = player.x - 5; x <= player.x + 5; x++){
-                if(x < 0 || x >= COLS){
-                    continue;
-                }
-                if((mvinch(y, x) & A_CHARTEXT) == '#'){
-                    attron(COLOR_PAIR(21));
-                    mvprintw(y, x, "#");
-                    attroff(COLOR_PAIR(21));
-                    map[y][x].ch = '#';
-                    map[y][x].color_pair = 21;
-                }
-            }
+    hallway_check = 1;
+    for(int y = player.y + 1; y <= player.y + 5 && y < LINES; y++){
+        if((mvinch(y, player.x) & A_CHARTEXT) != '#'){
+            hallway_check = 0;
+            break;
+        }
+    }
+    if(hallway_check){
+        for(int y = player.y + 1; y <= player.y + 5 && y < LINES; y++){
+            attron(COLOR_PAIR(21));
+            mvprintw(y, player.x, "#");
+            attroff(COLOR_PAIR(21));
+            map[y][player.x].ch = '#';
+            map[y][player.x].color_pair = 21;
+        }
+    }
+
+    hallway_check = 1;
+    for(int x = player.x - 1; x >= player.x - 5 && x >= 0; x--){
+        if((mvinch(player.y, x) & A_CHARTEXT) != '#'){
+            hallway_check = 0;
+            break;
+        }
+    }
+    if(hallway_check){
+        for(int x = player.x - 1; x >= player.x - 5 && x >= 0; x--){
+            attron(COLOR_PAIR(21));
+            mvprintw(player.y, x, "#");
+            attroff(COLOR_PAIR(21));
+            map[player.y][x].ch = '#';
+            map[player.y][x].color_pair = 21;
+        }
+    }
+
+    hallway_check = 1;
+    for(int x = player.x + 1; x <= player.x + 5 && x < COLS; x++){
+        if((mvinch(player.y, x) & A_CHARTEXT) != '#'){
+            hallway_check = 0;
+            break;
+        }
+    }
+    if(hallway_check){
+        for(int x = player.x + 1; x <= player.x + 5 && x < COLS; x++){
+            attron(COLOR_PAIR(21));
+            mvprintw(player.y, x, "#");
+            attroff(COLOR_PAIR(21));
+            map[player.y][x].ch = '#';
+            map[player.y][x].color_pair = 21;
         }
     }
 
@@ -1322,7 +1351,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             check = 1;
             continue;
         }
-        if(sscanf(line, format_str, &room_count) == 1) {
+        if(sscanf(line, format_str, &room_count) == 1){
             continue;
         } 
         if(check){
