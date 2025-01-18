@@ -47,7 +47,7 @@ void print_room(struct room *rooms, int room_count){
     int width = rooms[room_count].x_size;
     int height = rooms[room_count].y_size;
 
-    mvprintw(y_start, x_start, "_");
+    mvprintw(y_start, x_start, "U");
     for(int i = 1; i <= width; i++){
         move(y_start, x_start + i);
         printw("_");
