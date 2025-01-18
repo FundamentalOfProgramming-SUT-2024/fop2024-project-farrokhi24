@@ -395,14 +395,19 @@ int find_room(int x, int y){
 }
 
 void generate_pillars(){
-    int pillar_count = rand_with_range(5, 10);
+    int pillar_count = rand_with_range(10, 20);
     int i = 0;
     int x, y;
     while(i < pillar_count){
         x = rand_with_range(1, COLS);
         y = rand_with_range(1, LINES);
-        if(mvinch(y, x) == '.' && !is_neighbours_with('+', x, y) && !is_neighbours_with('=', x, y)){
+        if((mvinch(y, x) & A_CHARTEXT) == '.'){
+            map[y][x].color_pair = 21;
+            if(rooms[find_room(x, y)].explored == 0){
+                attron(COLOR_PAIR(20));
+            }
             mvprintw(y, x, "O");
+            map[y][x].ch = 'O';
             i++;
         }
     }
@@ -959,9 +964,12 @@ void print_map_with_colors(int floor_num){
     }
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
-            if(map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.' && map[y][x].ch != 'O'){
+            if(map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.'){
                 if(rooms[find_room(x, y)].explored == 1){
                     attron(COLOR_PAIR(map[y][x].color_pair));
+                    if(map[y][x].ch == 'O'){
+                        attron(COLOR_PAIR(21));
+                    }
                     if(map[y][x].ch == '*'){
                         attron(COLOR_PAIR(7));
                     }
@@ -1209,7 +1217,7 @@ void print_full_map(int floor_num){
 
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
-            if(map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.' && map[y][x].ch != 'O'){
+            if(map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.'){
                 if(map[y][x].ch == '#'){
                     attron(COLOR_PAIR(21));
                 }
@@ -1504,20 +1512,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         }
     }
 
-    for(int i = 0; i < room_count; i++){
-        int random_theme = rand();
-        if(random_theme % 10 < 5){
-            rooms[i].theme = 1; //normal
-        }
-        else if(random_theme % 10 == 8){
-            rooms[i].theme = 2; //enchant
-        }
-        else{
-            rooms[i].theme = 3; //nightmare
-        }
-
-    }
-
     clear();
     print_rooms();
     
@@ -1553,6 +1547,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         player.x = staircases[floor_num].x;
         player.y = staircases[floor_num].y;
     }
+
     attron(COLOR_PAIR(5));
     mvprintw(player.y, player.x, "\U0001FBC5");
     attroff(COLOR_PAIR(5));
@@ -1561,20 +1556,39 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     if(rooms[find_room(player.x, player.y)].theme != 3){
         rooms[find_room(player.x, player.y)].explored = 1;
     }
+
+    for(int i = 0; i < room_count; i++){
+        int random_theme = rand();
+        if(rooms[i].explored == 0){
+            if(random_theme % 10 < 5){
+                rooms[i].theme = 1;
+            }
+            else if(random_theme % 10 < 8){
+                rooms[i].theme = 2;
+            }
+            else{
+                rooms[i].theme = 3;
+            }
+        }
+        else{
+            rooms[i].theme = 1;
+        }
+    }
+
     print_rooms();
 
     attron(COLOR_PAIR(20));
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
-            if(map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.' && map[y][x].ch != 'O'){
+            if(map[y][x].ch != '_' && map[y][x].ch != '|' && map[y][x].ch != '.'){
                 mvprintw(y, x, "%c", map[y][x].ch);
             }
         }
     }
     attroff(COLOR_PAIR(20));
-    generate_pillars();
     generate_gold();
     generate_weapon();
+    generate_pillars();
     generate_food();
     generate_spell();
     generate_ancient_key();
@@ -2027,7 +2041,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         current_room = find_room(player.x, player.y);
         if(current_room != -1){
             if(rooms[current_room].theme != 3){
-                mvprintw(0,0,"ROOM %d EXPLORED, TYPE=%d", current_room, rooms[current_room].theme);
                 rooms[current_room].explored = 1;
             }
             if(current_room != prev_room){
@@ -2050,7 +2063,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
                     int y = player.y + delta_y;
                     if(map[y][x].color_pair != 0){
                         attron(COLOR_PAIR(21));
-                        
                         if(map[y][x].ch == '*'){
                             attron(COLOR_PAIR(7));
                         }
@@ -2093,7 +2105,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
                             map[y][x].color_check = 1;
                             attron(COLOR_PAIR(map[y][x].color_pair));
                         }
-                        //attron(COLOR_PAIR(map[y][x].color_pair));
                         mvprintw(y, x, "%c", map[y][x].ch);
                         attroff(COLOR_PAIR(map[y][x].color_pair));
                     }
