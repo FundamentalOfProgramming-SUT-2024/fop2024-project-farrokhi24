@@ -135,10 +135,15 @@ int valid_password(char *password){
 }
 
 int valid_email(char *email){
+    int atsign_count = 0;
     int atsign_index = -1, dot_index = -1;
     for(int i = 0; email[i] != '\0'; i++){
         if(email[i] == '@'){
             atsign_index = i;
+            atsign_count++;
+        }
+        if(atsign_count > 1){
+            return 0;
         }
         if(email[i] == '.'){
             dot_index = i;
