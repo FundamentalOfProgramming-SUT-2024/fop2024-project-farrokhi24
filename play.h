@@ -324,7 +324,8 @@ int check_movement(int floor_num, int x, int y){
     }
 
     if(character == '@'){
-        mvprintw(player.y, player.x, "\U0001FBC5");
+        attron(COLOR_PAIR(5));
+    
         int password_door_num = find_password_door(x, y);
         ask_password(password_doors[password_door_num].password, x, y, floor_num);
         mvprintw(player.y, player.x, "%c", player.under.ch);
@@ -381,7 +382,9 @@ void print_rooms(){
         attroff(COLOR_PAIR(20));
     }
 
+    attron(COLOR_PAIR(5));
     mvprintw(player.y, player.x, "\U0001FBC5");
+    attroff(COLOR_PAIR(5));
 }
 
 int find_room(int x, int y){
@@ -632,7 +635,6 @@ int check_trap(int x, int y, struct point *traps, int trap_count, int *strength)
 
 void display_door_password(int password, int floor_num){
     attron(COLOR_PAIR(5));
-
     mvprintw(player.y, player.x, "\U0001FBC5");
     attroff(COLOR_PAIR(5));
     
@@ -1212,7 +1214,9 @@ void print_full_map(int floor_num){
         mvprintw(y_start + height + 1, x_start + width + 1, "_");
     }
 
+    attron(COLOR_PAIR(5));
     mvprintw(player.y, player.x, "\U0001FBC5");
+    attroff(COLOR_PAIR(5));
     mvprintw(staircases[floor_num].y, staircases[floor_num].x, "<");
 
     for(int y = 0; y < LINES; y++){
@@ -1713,7 +1717,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         mvprintw(LINES - 1, 75, "%d", strength);
 
         attron(COLOR_PAIR(5));
-
         mvprintw(player.y, player.x, "\U0001FBC5");
         attroff(COLOR_PAIR(5));
         refresh();
@@ -1723,9 +1726,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
 
         attron(COLOR_PAIR(5));
-
         mvprintw(player.y, player.x, "\U0001FBC5");
         attroff(COLOR_PAIR(5));
+
         refresh();
         
         int c = getch();
@@ -1900,7 +1903,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
 
         if(player.under.ch == '&' && previous_under != '&'){
             attron(COLOR_PAIR(5));
-
             mvprintw(player.y, player.x, "\U0001FBC5");
             attroff(COLOR_PAIR(5));
             int password_door_num = find_door_to_button(player.x, player.y);
@@ -1996,7 +1998,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             mvprintw(0, 0, "                  ");
         }
         if(player.under.ch == '<'){
+            attron(COLOR_PAIR(5));
             mvprintw(player.y, player.x, "\U0001FBC5");
+            attroff(COLOR_PAIR(5));
             char cmd = getch();
             if(cmd == '>'){
                 if(floor_num == 1){
@@ -2030,7 +2034,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             ancient_key_count += 2;
         }
 
+        attron(COLOR_PAIR(5));
         mvprintw(player.y, player.x, "\U0001FBC5");
+        attroff(COLOR_PAIR(5));
+        
         int trap_num = check_trap(player.x, player.y, traps, trap_count, &strength);
         if(trap_num != -1){
             player.under.ch = '^';

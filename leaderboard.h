@@ -82,17 +82,14 @@ void print_leaderboard(struct User users[], int user_count, int page_number, cha
         mvprintw(y + i - start_index,(COLS - 60) / 2, "%d", i + 1);
         if(i == 0){
             mvprintw(y + i - start_index, (COLS - 50) / 2, "%s", users[i].username);
-            attroff(A_ITALIC);
             printw("\U0001F947");
         }
         if(i == 1){
             mvprintw(y + i - start_index, (COLS - 50) / 2, "%s", users[i].username);
-            attroff(A_ITALIC);
             printw("\U0001F948");
         }
         if(i == 2){
             mvprintw(y + i - start_index, (COLS - 50) / 2, "%s", users[i].username);
-            attroff(A_ITALIC);
             printw("\U0001F949");
         }
         else{
@@ -103,8 +100,8 @@ void print_leaderboard(struct User users[], int user_count, int page_number, cha
         mvprintw(y + i - start_index,(COLS + 14) / 2, "%d", users[i].games_played);
         long int days = users[i].experience / 86400;
         float hours =(users[i].experience % 86400) / 3600.0;
-        mvprintw(y + i - start_index,(COLS + 32) / 2, "%ld d %.2f h", days, hours);
-        attroff(COLOR_PAIR(2) | A_ITALIC);
+        mvprintw(y + i - start_index,(COLS + 32) / 2, "%ldd %.2fh", days, hours);
+        attroff(COLOR_PAIR(2));
     }
 
     curs_set(0);
