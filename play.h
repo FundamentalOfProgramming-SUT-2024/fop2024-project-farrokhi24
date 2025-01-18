@@ -18,6 +18,7 @@ typedef struct{
     int color_check;
 } character;
 
+int d;
 character **map;
 int room_count;
 struct point doors[50];
@@ -463,7 +464,7 @@ void generate_gold(){
 }
 
 void generate_food(){
-    int food_count = rand_with_range(10, 20);
+    int food_count = rand_with_range(10 - 2 * d, 20 - 2 * d);
     int i = 0;
     int x, y;
     while(i < food_count){
@@ -1454,6 +1455,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         }
     }
 
+    if(difficulty == 'e'){
+        d = 1;
+    }
+    else if(difficulty == 'm'){
+        d = 2;
+    }
+    else if(difficulty == 'h'){
+        d = 3;
+    }
+
     init_pair(20, COLOR_BLACK, COLOR_BLACK);
     initialize_map();
     
@@ -1537,7 +1548,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     }
 
     generate_staircase(floor_num);
-    if(start_check == 1){
+    if(player.x == -1 && player.y == -1){
         char character;
         do{
             player.x = random_with_range(0, COLS - 1);
@@ -1547,10 +1558,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         } while(character != '.');
         player.under.ch = '.';
     }
-    else{
-        player.x = staircases[floor_num].x;
-        player.y = staircases[floor_num].y;
-    }
+    // else{
+    //     player.x = staircases[floor_num].x;
+    //     player.y = staircases[floor_num].y;
+    // }
 
     attron(COLOR_PAIR(5));
     mvprintw(player.y, player.x, "\U0001FBC5");
@@ -1680,7 +1691,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
     while(1){
         current_time = time(NULL);
         
-        if(difftime(current_time, start_time) >= 20 && hunger < 20){
+        if(difftime(current_time, start_time) >= 25 - 5 * d && hunger < 20){
             hunger++;
             start_time = current_time;
         }
@@ -1876,17 +1887,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             spell_list();
         }
         else if(c == 'q' && floor_num == 4){
-            return -1;;
+            return -1;
         }
         else if(c == 27){
             int choice = game_pause();
             if(choice == 1){
-                return -2;
+                return -1 * floor_num;
             }
             if(choice == 2){
-                return -3;
+                return -5;
             }
-            
         }
         
         for(int y = 0; y < LINES; y++){
@@ -2138,37 +2148,116 @@ void read_last_game_data(char* filename){
     fclose(file);
 }
 
-void save_game(char* filename){
+void save_game(char* filename, int floor_num){
     FILE *file = fopen(filename, "r+");
-    
-    if(file == NULL){
-        perror("Error opening file");
-        return;
-    }
-    
-    char text[1000];
-    int previous_score, previous_gold, games_played;
-    
-    fgets(text, sizeof(text), file);
-    
-    sscanf(text, "Score: %d\nGold: %d\nGames Played: %d\n", &previous_score, &previous_gold, &games_played);
-    games_played += 1;
-    sprintf(text, "Score: %d\nGold: %d\nGames Played: %d\n", gold, gold, games_played);
-    
+
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
-    
-    fprintf(file, "%s", text);
-    
+
+    char *file_content = malloc(file_size + 1);
+    fread(file_content, 1, file_size, file);
+    file_content[file_size] = '\0';
+
+    int previous_score, previous_gold, games_played;
+    long int first_time;
+    sscanf(file_content, "Time: %ld\nScore: %d\nGold: %d\nGames Played: %d\n", &first_time, &previous_score, &previous_gold, &games_played);
+    games_played += 1;
+
+    char new_text[1000];
+    snprintf(new_text, sizeof(new_text), "Time: %ld\nScore: %d\nGold: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
+    char *room_count_position = strstr(file_content, "Room Count1: ");
+
+    if(room_count_position){
+        long offset = room_count_position - file_content;
+        snprintf(file_content, offset + 1, "%s", new_text);
+        strcat(file_content, room_count_position);
+    }
+    else{
+        snprintf(file_content, file_size + 1, "%s", new_text);
+    }
+
+    freopen(NULL, "w", file);
+    fputs(file_content, file);
+
+    free(file_content);
     fclose(file);
 }
 
 void play(char *username, char color, char difficulty){
+    int floor_num;
+
     char filename[100];
     strcpy(filename, username);
     strcat(filename, ".txt");
 
+    FILE *file = fopen(filename, "r");
+
+    char line[COLS - 1];
+    int i = 0;
+    while(fgets(line, sizeof(line), file)){
+        if(sscanf(line, "Gold: %d", &gold) == 1){
+            continue;
+        }
+        if(sscanf(line, "Strength: %d", &strength) == 1){
+            continue;
+        }
+        if(sscanf(line, "Hunger: %d", &hunger) == 1){
+            continue;
+        }
+        if(sscanf(line, "Normal Food: %d", &food[0]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Deluxe Food: %d", &food[1]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Magical Food: %d", &food[2]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Rotten Food: %d", &food[3]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Mace: %d", &backpack[0]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Dagger: %d", &backpack[1]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Wand: %d", &backpack[2]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Arrow: %d", &backpack[3]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Sword: %d", &backpack[4]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Health Spell: %d", &spells[0]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Speed Spell: %d", &spells[1]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Damage Spell: %d", &spells[2]) == 1){
+            continue;
+        }
+        if(sscanf(line, "Ancient Key: %d", &ancient_key_count) == 1){
+            continue;
+        }
+        if(sscanf(line, "Floor: %d", &floor_num) == 1){
+            continue;
+        }
+        if(sscanf(line, "Player y: %d", &player.y) == 1){
+            continue;
+        }
+        if(sscanf(line, "Player x: %d", &player.x) == 1){
+            continue;
+        }
+    }
+
+    fclose(file);
+
     read_last_game_data(filename);
-    int floor_num = 1;
     start_check = 1;
     while(floor_num >= 0){
         floor_num = enter_floor(username, color, difficulty, floor_num);
@@ -2176,7 +2265,7 @@ void play(char *username, char color, char difficulty){
         clear();
     }
 
-    if(floor_num == -1){
+    if(floor_num == -4){
         attron(A_BOLD);
         mvprintw(LINES / 2 - 2, (COLS - 7) / 2, "You Win");
         attroff(A_BOLD);
@@ -2185,8 +2274,8 @@ void play(char *username, char color, char difficulty){
         getch();
     }
 
-    if(floor_num >= -2){
-        save_game(filename);
+    if(floor_num > -5){
+        save_game(filename, -1 * floor_num);
     }
 
     clear();

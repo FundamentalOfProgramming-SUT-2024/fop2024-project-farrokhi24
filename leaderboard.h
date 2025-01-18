@@ -126,11 +126,6 @@ void print_options(int highlight){
 void read_all_users(struct User users[], int *user_count){
     FILE *file = fopen("user_data.txt", "r");
 
-    if(file == NULL){
-        perror("Failed to open user_data.txt");
-        return;
-    }
-
     char line[256];
     int i = 0;
     while(fgets(line, sizeof(line), file)){

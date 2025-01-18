@@ -42,8 +42,8 @@ void new_game(char *username){
 
     long int current_time = time(NULL);
 
-    fprintf(file, "Score: 0\nGold: 0\nGames Played: 0\nTime: %ld\n",current_time);
-
+    fprintf(file, "Time: %ld\nScore: 0\nGold: 0\nGames Played: 0\nStrength: 20\nHunger: 0\nNormal Food: 0\nDeluxe Food: 0\nMagical Food: 0\nRotten Food 0\nMace: 1\nDagger: 0\nWand: 0\nArrow: 0\nSword: 0\nHealth Spell: 0\nSpeed Spell: 0\nDamage Spell: 0\nAncient Key: 0\nFloor: 1\nPlayer y: -1\nPlayer x: -1\n\n\n", current_time);
+    
     fclose(file);
 }
 
