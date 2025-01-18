@@ -336,7 +336,7 @@ int check_movement(int floor_num, int x, int y){
 }
 
 int is_top_left(int x, int y){
-    if(mvinch(y, x) == '_' && mvinch(y + 1, x) == '|' && mvinch(y, x + 1) == '_'){
+    if(mvinch(y, x) == 'U' || mvinch(y, x) == 'E' && mvinch(y + 1, x) == '|' && mvinch(y, x + 1) == '_'){
         return 1;
     }
     return 0;
@@ -1504,7 +1504,14 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             if(is_top_left(x, y) && room_num <= room_count){
                 rooms[room_num].x_top_left = x;
                 rooms[room_num].y_top_left = y;
-                rooms[room_num].explored = 0;
+                if((mvinch(y, x) & A_CHARTEXT) == 'U'){
+                    rooms[room_num].explored = 0;
+                }
+                else{
+                    rooms[room_num].explored = 1;
+                }
+                mvprintw(y, x, "_");
+                map[y][x].ch = '_';
 
                 int i = 1;
                 rooms[room_num].x_size = 0;
@@ -2149,6 +2156,17 @@ void read_last_game_data(char* filename){
 }
 
 void save_game(char* filename, int floor_num){
+    print_rooms();
+    for(int i = 0; i < room_count; i++){
+        if(rooms[i].explored == 1){
+            mvprintw(rooms[i].y_top_left, rooms[i].x_top_left, "E");
+        }
+        else{
+            mvprintw(rooms[i].y_top_left, rooms[i].x_top_left, "U");
+        }
+    }
+    getch();
+
     FILE *file = fopen(filename, "r+");
 
     fseek(file, 0, SEEK_END);
