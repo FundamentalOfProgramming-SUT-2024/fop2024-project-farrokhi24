@@ -344,6 +344,13 @@ int is_top_left(int x, int y){
 
 void print_rooms(){
     for(int i = 0; i < room_count; i++){
+        if(rooms[i].theme == 1){
+            attron(COLOR_PAIR(21));
+        }
+        if(rooms[i].theme == 2){
+            attron(COLOR_PAIR(9));
+        }
+
         if(rooms[i].explored == 0){
             attron(COLOR_PAIR(20));
         }
@@ -1836,7 +1843,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
         }
-        else if((c == 'f' || c == 'f') && check_movement(floor_num, player.x, player.y - 1)){
+        else if((c == 'k' || c == 'K') && check_movement(floor_num, player.x, player.y - 1)){
             if(f_check == 0){
                 player.y--;
             }
