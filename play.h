@@ -424,9 +424,11 @@ void generate_staircase(int floor_num){
         x = rand_with_range(1, COLS);
         y = rand_with_range(1, LINES);
         if((mvinch(y, x) & A_CHARTEXT) == '.'){
+            if(rooms[find_room(x, y)].explored == 0){
             staircases[floor_num].x = x;
             staircases[floor_num].y = y;
             i++;
+            }
         }
     }
 }
@@ -612,10 +614,12 @@ void generate_ancient_key(){
         x = rand_with_range(1, COLS);
         y = rand_with_range(1, LINES);
         if((mvinch(y, x) & A_CHARTEXT) == '.'){
-            ancient_key.x = x;
-            ancient_key.y = y;
-            ancient_key.full = 1;
-            i++;
+            if(rooms[find_room(x, y)].theme == 1){
+                ancient_key.x = x;
+                ancient_key.y = y;
+                ancient_key.full = 1;
+                i++;
+            }
         }
     }
     attroff(COLOR_PAIR(7));
@@ -1419,7 +1423,7 @@ int game_pause(){
     }
 }
 
-int enter_floor(char *username, char color, char difficulty, int floor_num){
+int enter_floor(char *username, char color, char difficulty, int floor_num, char *track_name){
     clear();
     start_time = time(NULL);
     char filename[100];
@@ -1554,7 +1558,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         init_pair(5, COLOR_YELLOW, COLOR_BLACK);
     }
 
-    generate_staircase(floor_num);
     if(player.x == -1 && player.y == -1){
         char character;
         do{
@@ -1565,19 +1568,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         } while(character != '.');
         player.under.ch = '.';
     }
-    // else{
-    //     player.x = staircases[floor_num].x;
-    //     player.y = staircases[floor_num].y;
-    // }
 
     attron(COLOR_PAIR(5));
     mvprintw(player.y, player.x, "\U0001FBC5");
     attroff(COLOR_PAIR(5));
     mvprintw(0, 0, "%d",find_room(player.x, player.y));
 
-    if(rooms[find_room(player.x, player.y)].theme != 3){
-        rooms[find_room(player.x, player.y)].explored = 1;
-    }
+    rooms[find_room(player.x, player.y)].theme = 1;
+    rooms[find_room(player.x, player.y)].explored = 1;
+
+    generate_staircase(floor_num);
 
     for(int i = 0; i < room_count; i++){
         int random_theme = rand();
@@ -1803,6 +1803,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             else{
                 while(check_movement(floor_num, player.x - 1, player.y)){
                     player.x--;
+                    if(find_room(y, x) != -1){
+                        if(rooms[find_room(y, x)].theme != 3){
+                            rooms[find_room(y, x)].explored = 1;
+                        }
+                    }
+                    if(map[player.y][player.x].ch == '#'){
+                        attron(COLOR_PAIR(21));
+                        mvprintw(player.y, player.x, "#");
+                        map[player.y][player.x].color_pair = 21;
+                    }
                 }
             }
         }
@@ -1813,6 +1823,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             else{
                 while(check_movement(floor_num, player.x, player.y + 1)){
                     player.y++;
+                    if(find_room(y, x) != -1){
+                        if(rooms[find_room(y, x)].theme != 3){
+                            rooms[find_room(y, x)].explored = 1;
+                        }
+                    }
+                    if(map[player.y][player.x].ch == '#'){
+                        attron(COLOR_PAIR(21));
+                        mvprintw(player.y, player.x, "#");
+                        map[player.y][player.x].color_pair = 21;
+                    }
                 }
             }
         }
@@ -1823,6 +1843,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             else{
                 while(check_movement(floor_num, player.x, player.y - 1)){
                     player.y--;
+                    if(find_room(y, x) != -1){
+                        if(rooms[find_room(y, x)].theme != 3){
+                            rooms[find_room(y, x)].explored = 1;
+                        }
+                    }
+                    if(map[player.y][player.x].ch == '#'){
+                        attron(COLOR_PAIR(21));
+                        mvprintw(player.y, player.x, "#");
+                        map[player.y][player.x].color_pair = 21;
+                    }
                 }
             }
         }
@@ -1833,6 +1863,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
             else{
                 while(check_movement(floor_num, player.x + 1, player.y)){
                     player.x++;
+                    if(find_room(y, x) != -1){
+                        if(rooms[find_room(y, x)].theme != 3){
+                            rooms[find_room(y, x)].explored = 1;
+                        }
+                    }
+                    if(map[player.y][player.x].ch == '#'){
+                        attron(COLOR_PAIR(21));
+                        mvprintw(player.y, player.x, "#");
+                        map[player.y][player.x].color_pair = 21;
+                    }
                 }
             }
         }
@@ -1845,6 +1885,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
                 while(check_movement(floor_num, player.x - 1, player.y - 1)){
                     player.x--;
                     player.y--;
+                    if(find_room(y, x) != -1){
+                        if(rooms[find_room(y, x)].theme != 3){
+                            rooms[find_room(y, x)].explored = 1;
+                        }
+                    }
+                    if(map[player.y][player.x].ch == '#'){
+                        attron(COLOR_PAIR(21));
+                        mvprintw(player.y, player.x, "#");
+                        map[player.y][player.x].color_pair = 21;
+                    }
                 }
             }
         }
@@ -1857,6 +1907,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
                 while(check_movement(floor_num, player.x + 1, player.y - 1)){
                     player.x++;
                     player.y--;
+                    if(find_room(y, x) != -1){
+                        if(rooms[find_room(y, x)].theme != 3){
+                            rooms[find_room(y, x)].explored = 1;
+                        }
+                    }
+                    if(map[player.y][player.x].ch == '#'){
+                        attron(COLOR_PAIR(21));
+                        mvprintw(player.y, player.x, "#");
+                        map[player.y][player.x].color_pair = 21;
+                    }
                 }
             }
         }
@@ -1869,6 +1929,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
                 while(check_movement(floor_num, player.x - 1, player.y + 1)){
                     player.x--;
                     player.y++;
+                    if(find_room(y, x) != -1){
+                        if(rooms[find_room(y, x)].theme != 3){
+                            rooms[find_room(y, x)].explored = 1;
+                        }
+                    }
+                    if(map[player.y][player.x].ch == '#'){
+                        attron(COLOR_PAIR(21));
+                        mvprintw(player.y, player.x, "#");
+                        map[player.y][player.x].color_pair = 21;
+                    }
                 }
             }
         }
@@ -1881,6 +1951,16 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
                 while(check_movement(floor_num, player.x + 1, player.y + 1)){
                     player.x++;
                     player.y++;
+                    if(find_room(y, x) != -1){
+                        if(rooms[find_room(y, x)].theme != 3){
+                            rooms[find_room(y, x)].explored = 1;
+                        }
+                    }
+                    if(map[player.y][player.x].ch == '#'){
+                        attron(COLOR_PAIR(21));
+                        mvprintw(player.y, player.x, "#");
+                        map[player.y][player.x].color_pair = 21;
+                    }
                 }
             }
         }
@@ -2064,20 +2144,25 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
         
         current_room = find_room(player.x, player.y);
         if(current_room != -1){
-            if(rooms[current_room].theme != 3){
-                rooms[current_room].explored = 1;
-            }
-            if(current_room != prev_room){
-                if(rooms[current_room].theme == 2){
-                    play_music("enchant.mp3");
+            if(rooms[current_room].explored == 0){
+                mvprintw(0, 0, "You Are Exploring a New Room.");
+                if(rooms[current_room].theme != 3){
+                    rooms[current_room].explored = 1;
                 }
-                else if(rooms[current_room].theme == 3){
-                    play_music("nightmare.mp3");
+            }
+            if(strcmp(track_name, "off") != 0){
+                if(current_room != prev_room){
+                    if(rooms[current_room].theme == 2){
+                        play_music("enchant.mp3");
+                    }
+                    else if(rooms[current_room].theme == 3){
+                        play_music("nightmare.mp3");
+                    }
                 }
             }
         } 
-        else if(player.under.ch == '#' && prev_room != -1 && rooms[prev_room].theme != 1){
-            play_music("track_1.mp3");
+        else if(player.under.ch == '#' && prev_room != -1 && rooms[prev_room].theme != 1 && strcmp(track_name, "off") != 0){
+            play_music(track_name);
         }
         prev_room = current_room;
         if(rooms[current_room].theme == 3){
@@ -2135,28 +2220,21 @@ int enter_floor(char *username, char color, char difficulty, int floor_num){
                 }
             }
         }
+        if(strength == 0){
+            return -6;
+        }
     }
 
     clear();
     endwin();
 }
 
-void read_last_game_data(char* filename){
-    FILE *file = fopen(filename, "r");
-    
-    char text[1000];
-    
-    fgets(text, sizeof(text), file);
-    
-    sscanf(text, "Score: %d", &gold);
-    
-    fseek(file, 0, SEEK_SET);
-    
-    fclose(file);
-}
-
 void save_game(char* filename, int floor_num){
-    print_rooms();
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
+            mvprintw(y, x, "%c", map[y][x].ch);
+        }
+    }
     for(int i = 0; i < room_count; i++){
         if(rooms[i].explored == 1){
             mvprintw(rooms[i].y_top_left, rooms[i].x_top_left, "E");
@@ -2202,7 +2280,7 @@ void save_game(char* filename, int floor_num){
     fclose(file);
 }
 
-void play(char *username, char color, char difficulty){
+void play(char *username, char color, char difficulty, int song){
     int floor_num;
 
     char filename[100];
@@ -2274,11 +2352,17 @@ void play(char *username, char color, char difficulty){
     }
 
     fclose(file);
+    char track_name[15];
 
-    read_last_game_data(filename);
+    if (song != 0) {
+        snprintf(track_name, sizeof(track_name), "track_%d.mp3", song);
+    } else {
+        snprintf(track_name, sizeof(track_name), "off");
+    }
+
     start_check = 1;
-    while(floor_num >= 0){
-        floor_num = enter_floor(username, color, difficulty, floor_num);
+    while (floor_num >= 0) {
+        floor_num = enter_floor(username, color, difficulty, floor_num, track_name);
         start_check = 0;
         clear();
     }
@@ -2291,8 +2375,16 @@ void play(char *username, char color, char difficulty){
         mvprintw(LINES / 2 + 2, (COLS - 28) / 2, "Press Any Key to Continue...");
         getch();
     }
+    if(floor_num == -6){
+        attron(A_BOLD);
+        mvprintw(LINES / 2 - 2, (COLS - 7) / 2, "You Lose");
+        attroff(A_BOLD);
+        mvprintw(LINES / 2, (COLS - 8) / 2, "Score: %d", gold);
+        mvprintw(LINES / 2 + 2, (COLS - 28) / 2, "Press Any Key to Continue...");
+        getch();
+    }
 
-    if(floor_num > -5){
+    if(floor_num > -5 || floor_num == -6){
         save_game(filename, -1 * floor_num);
     }
 

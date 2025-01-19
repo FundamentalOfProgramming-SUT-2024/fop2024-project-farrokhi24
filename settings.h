@@ -188,7 +188,7 @@ void choose_character_color(char *color){
     refresh();
 }
 
-void settings(char *color, char *difficulty){
+void settings(char *color, char *difficulty, int *song){
     char *options[] = {"Difficulty", "Character Color", "Music", "Exit"};
     int highlight = 1;
     int c;
@@ -220,7 +220,7 @@ void settings(char *color, char *difficulty){
             choose_character_color(color);
         }
         else if((c == 10) && (highlight == 3)){
-            music();
+            music(song);
         }
         else if((c == 10) && (highlight == 4)){
             break;

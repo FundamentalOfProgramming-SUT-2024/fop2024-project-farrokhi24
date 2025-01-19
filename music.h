@@ -35,7 +35,8 @@ void play_music(char *track_name){
     Mix_Music *music = Mix_LoadMUS(track_name);
     Mix_PlayMusic(music, -1);
 }
-void music(){
+
+void music(int *song){
     char *options[] ={"Track 1", "Track 2", "Track 3", "Turn Music Off", "Exit"};
     int highlight = 1;
     int c;
@@ -64,15 +65,19 @@ void music(){
         }
         else if((c == 10) && (highlight == 1)){
             play_music("track_1.mp3");
+            *song = 1;
         }
         else if((c == 10) && (highlight == 2)){
             play_music("track_2.mp3");
+            *song = 2;
         }
         else if((c == 10) && (highlight == 3)){
             play_music("track_3.mp3");
+            *song = 3;
         }
         else if((c == 10) && (highlight == 4)){
             Mix_HaltMusic();
+            *song = 0;
         }
         else if((c == 10) && (highlight == 5)){
             break;

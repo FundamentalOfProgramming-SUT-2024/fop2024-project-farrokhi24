@@ -59,6 +59,9 @@ int game_menu(char *username, char *color, char *difficulty){
     refresh();
     print_game_menu(highlight, options);
     int choice = 0;
+    int song_num = 0;
+    int *song = &song_num;
+
     int c;
     while(1){
         c = getch();
@@ -81,16 +84,16 @@ int game_menu(char *username, char *color, char *difficulty){
         else if((c == 10) &&(highlight == 1)){
             new_game(username);
             generate_map(username, *difficulty);
-            play(username, *color, *difficulty);
+            play(username, *color, *difficulty, *song);
         }
         else if((c == 10) &&(highlight == 2)){
-            play(username, *color, *difficulty);
+            play(username, *color, *difficulty, *song);
         }
         else if((c == 10) &&(highlight == 3)){
             leaderboard(username);
         }
         else if((c == 10) &&(highlight == 4)){
-            settings(color, difficulty);
+            settings(color, difficulty, song);
         }
         else if((c == 10) &&(highlight == 5)){
             clear();
