@@ -293,16 +293,16 @@ int check_movement(int floor_num, int x, int y){
         return 1;
     }
 
-    if(character == 'F' && (ch & A_COLOR) == COLOR_PAIR(14)){
+    if(character == 'f' && (ch & A_COLOR) == COLOR_PAIR(14)){
         food[0]++;
     }
-    if(character == 'F' && (ch & A_COLOR) == COLOR_PAIR(7)){
+    if(character == 'f' && (ch & A_COLOR) == COLOR_PAIR(7)){
         food[1]++;
     }
-    if(character == 'F' && (ch & A_COLOR) == COLOR_PAIR(13)){
+    if(character == 'f' && (ch & A_COLOR) == COLOR_PAIR(13)){
         food[2]++;
     }
-    if(character == 'F' && (ch & A_COLOR) == COLOR_PAIR(10)){
+    if(character == 'f' && (ch & A_COLOR) == COLOR_PAIR(10)){
         food[3]++;
     }
 
@@ -316,7 +316,7 @@ int check_movement(int floor_num, int x, int y){
         spells[2]++;
     }
     
-    if(character == '<' || character == '^' || character == '*' || character == '$' || character == 'M' || character == 'D' || character == 'W' || character == 'A' || character == 'S' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'F'){
+    if(character == '<' || character == '^' || character == '*' || character == '$' || character == 'M' || character == 'D' || character == 'W' || character == 'A' || character == 'S' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f'){
         return 1;
     }
 
@@ -493,8 +493,8 @@ void generate_food(){
             if(rooms[find_room(x, y)].explored == 0){
                 attron(COLOR_PAIR(20));
             }
-            mvprintw(y, x, "F");
-            map[y][x].ch = 'F';
+            mvprintw(y, x, "f");
+            map[y][x].ch = 'f';
             i++;
         }
     }
@@ -986,7 +986,7 @@ void print_map_with_colors(int floor_num){
                     if(map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
                         attron(COLOR_PAIR(16));
                     }
-                    if(map[y][x].ch == 'F' && map[y][x].color_pair == 20 && !map[y][x].color_check){
+                    if(map[y][x].ch == 'f' && map[y][x].color_pair == 20 && !map[y][x].color_check){
                         int random = rand() % 6;
                         if(random < 3){
                             map[y][x].color_pair = 14;
@@ -1245,7 +1245,7 @@ void print_full_map(int floor_num){
                 if(map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
                     attron(COLOR_PAIR(16));
                 }
-                if(map[y][x].ch == 'F' && !map[y][x].color_check){
+                if(map[y][x].ch == 'f' && !map[y][x].color_check){
                     int random = rand() % 6;
                     if(random < 3){
                         map[y][x].color_pair = 14;
@@ -1753,7 +1753,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         print_map_with_colors(floor_num);
 
         int f_check = 0;
-        if(c == 'f' || c == 'F'){
+        if(c == 'f' || c == 'f'){
             f_check = 1;
             c = getch();
         }
@@ -1836,7 +1836,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
         }
-        else if((c == 'k' || c == 'K') && check_movement(floor_num, player.x, player.y - 1)){
+        else if((c == 'f' || c == 'f') && check_movement(floor_num, player.x, player.y - 1)){
             if(f_check == 0){
                 player.y--;
             }
@@ -2033,7 +2033,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             getch();
             mvprintw(0, 0, "                     ");
         }
-        if(player.under.ch == 'F' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
+        if(player.under.ch == 'f' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             print_map_with_colors(floor_num);
@@ -2181,7 +2181,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                         if(map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
                             attron(COLOR_PAIR(16));
                         }
-                        if(map[y][x].ch == 'F'){
+                        if(map[y][x].ch == 'f'){
                             if(!map[y][x].color_check){
                                 int random = rand() % 6;
                                 if(random < 3){
