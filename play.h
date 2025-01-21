@@ -10,6 +10,8 @@ struct point{
     int x;
     int y;
     int full;
+    int secret;
+    int revealed;
 };
 
 typedef struct{
@@ -384,7 +386,7 @@ int check_movement(int floor_num, int x, int y){
         spells[2]++;
     }
     
-    if(character == '<' || character == '^' || character == '*' || character == '$' || character == 'M' || character == 'D' || character == 'W' || character == 'A' || character == 'S' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f'){
+    if(character == '?' || character == '<' || character == '^' || character == '*' || character == '$' || character == 'M' || character == 'D' || character == 'W' || character == 'A' || character == 'S' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f'){
         return 1;
     }
 
@@ -467,6 +469,15 @@ int find_room(int x, int y){
     for(int i = 0; i < room_count; i++){
         if(x >= rooms[i].x_top_left && x <= rooms[i].x_top_left + rooms[i].x_size + 1 &&
             y >= rooms[i].y_top_left && y <= rooms[i].y_top_left + rooms[i].y_size + 1){
+            return i;
+        }
+    }
+    return -1;
+}
+
+int find_door(int x, int y){
+    for(int i = 0; i < room_count; i++){
+        if(x == doors[i].x && x == doors[i].x){
             return i;
         }
     }
@@ -1029,6 +1040,16 @@ void reveal_trap(struct point *traps, int trap_count, int x, int y){
     }
 }
 
+void reveal_secret_door(struct point *traps, int trap_count, int x, int y){
+    for(int i = 0; i < 50; i++){
+        if(doors[find_door(x, y)].secret = 1){
+            mvprintw(y, x, "?");
+            doors[find_door(x, y)].revealed = 1;
+            return;
+        }
+    }
+}
+
 void print_map_with_colors(int floor_num){
     mvprintw(LINES - 1, 30, "Score:");
     mvprintw(LINES - 1, 50, "Hits: 0");
@@ -1221,7 +1242,12 @@ void print_map_with_colors(int floor_num){
         if(rooms[find_room(doors[i].x, doors[i].y)].explored == 0){
             attron(COLOR_PAIR(20));
         }
-        mvprintw(doors[i].y, doors[i].x, "+");
+        if(doors[i].secret == 1){
+            mvprintw(doors[i].y, doors[i].x, "?");
+        }
+        else{
+            mvprintw(doors[i].y, doors[i].x, "+");
+        }
         attroff(COLOR_PAIR(20));
     }
     print_password_doors();
@@ -1384,12 +1410,16 @@ void print_full_map(int floor_num){
     if(map[player.y][player.x].ch == '+'){
         attron(COLOR_PAIR(21));
         mvprintw(player.y, player.x, "+");
-        
     }
 
     for(int i = 0; i < 50; i++){
         attron(COLOR_PAIR(21));
-        mvprintw(doors[i].y, doors[i].x, "+");
+        if(doors[i].secret == 1){
+            mvprintw(doors[i].y, doors[i].x, "?");
+        }
+        else{
+            mvprintw(doors[i].y, doors[i].x, "+");
+        }
     }
     print_password_doors();
 }
@@ -1785,7 +1815,38 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     long int current_time, hunger_full_start_time;
     int hunger_full = 0;
     start_time = time(NULL);
-    
+
+    // for (int i = 0; i < 50; i++) {
+    //     if (rooms[find_room(doors[i].x, doors[i].y)].theme == 2) {
+    //         int current_x = doors[i].x, current_y = doors[i].y;
+    //         int x_dir[4] = {-1, 0, 0, 1}, y_dir[4] = {0, -1, 1, 0};
+    //         int found_hallway = 0;
+
+    //         while ((mvinch(current_y, current_x) & A_CHARTEXT) != '+') {
+    //             int moved = 0;
+    //             for (int j = 0; j < 4; j++) {
+    //                 if ((mvinch(current_y + y_dir[j], current_x + x_dir[j]) & A_CHARTEXT) == '#') {
+    //                     current_x += x_dir[j];
+    //                     current_y += y_dir[j];
+    //                     moved = 1;
+    //                     found_hallway = 1;
+    //                     break;
+    //                 }
+    //             }
+    //             if (!moved) {
+    //                 break;
+    //             }
+    //         }
+
+    //         if (found_hallway && (mvinch(current_y, current_x) & A_CHARTEXT) == '+') {
+    //             int door_index = find_door(current_y, current_x);
+    //             if (door_index != -1) {
+    //                 doors[door_index].secret = 1;
+    //             }
+    //         }
+    //     }
+    // }
+ 
     print_map_with_colors(floor_num);
     int current_room, prev_room = -1;
     while(1){
@@ -1876,7 +1937,15 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             if(rooms[find_room(doors[i].x, doors[i].y)].explored == 0){
                 attron(COLOR_PAIR(20));
             }
-            mvprintw(doors[i].y, doors[i].x, "+");
+            if(rooms[find_room(doors[i].x, doors[i].y)].theme == 2){
+               doors[i].secret = 1;
+            }
+            if(doors[i].secret == 1){
+                mvprintw(doors[i].y, doors[i].x, "?");
+            }
+            else{
+                mvprintw(doors[i].y, doors[i].x, "+");
+            }
             attroff(COLOR_PAIR(20));
         }
         print_password_doors();
@@ -2244,8 +2313,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         
         current_room = find_room(player.x, player.y);
         if(current_room != -1){
-            if(rooms[current_room].explored == 0){
+            if(rooms[current_room].explored == 0 && rooms[current_room].theme != 3){
                 mvprintw(0, 0, "You Are Exploring a New Room.");
+                getch();
+                mvprintw(0, 0, "                             ");
                 if(rooms[current_room].theme != 3){
                     rooms[current_room].explored = 1;
                 }
