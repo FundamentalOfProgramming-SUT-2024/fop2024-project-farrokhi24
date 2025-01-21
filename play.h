@@ -1243,7 +1243,9 @@ void print_map_with_colors(int floor_num){
             attron(COLOR_PAIR(20));
         }
         if(doors[i].secret == 1){
-            mvprintw(doors[i].y, doors[i].x, "?");
+            if(doors[find_door(x, y)].revealed == 1){
+                mvprintw(doors[i].y, doors[i].x, "?");
+            }
         }
         else{
             mvprintw(doors[i].y, doors[i].x, "+");
@@ -1415,7 +1417,9 @@ void print_full_map(int floor_num){
     for(int i = 0; i < 50; i++){
         attron(COLOR_PAIR(21));
         if(doors[i].secret == 1){
-            mvprintw(doors[i].y, doors[i].x, "?");
+            if(doors[find_door(x, y)].revealed == 1){
+                mvprintw(doors[i].y, doors[i].x, "?");
+            }
         }
         else{
             mvprintw(doors[i].y, doors[i].x, "+");
@@ -1941,7 +1945,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                doors[i].secret = 1;
             }
             if(doors[i].secret == 1){
-                mvprintw(doors[i].y, doors[i].x, "?");
+                if(doors[find_door(x, y)].revealed == 1){
+                    mvprintw(doors[i].y, doors[i].x, "?");
+                }
             }
             else{
                 mvprintw(doors[i].y, doors[i].x, "+");
