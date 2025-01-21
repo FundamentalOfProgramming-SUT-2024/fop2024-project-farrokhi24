@@ -57,6 +57,7 @@ struct password_door{
     int x_button;
     int y_button;
     int unlocked;
+    long int time_unlocked;
 };
 
 struct password_door password_doors[3];
@@ -138,6 +139,7 @@ void ask_password(int password, int x, int y, int floor_num){
                             wattroff(win, COLOR_PAIR(10));
                             ancient_key_count -= 2;
                             password_doors[password_door_num].unlocked = 1;
+                            password_doors[password_door_num].time_unlocked = time(NULL);
                         }
                         
                         wrefresh(win);
@@ -208,6 +210,7 @@ void ask_password(int password, int x, int y, int floor_num){
                             wattroff(win, COLOR_PAIR(10));
                             ancient_key_count -= 2;
                             password_doors[password_door_num].unlocked = 1;
+                            password_doors[password_door_num].time_unlocked = time(NULL);
                         }
                         
                         wrefresh(win);
@@ -216,6 +219,12 @@ void ask_password(int password, int x, int y, int floor_num){
                     }
                 }
                 if(highlight == 1){
+                    int password_2 = password % 10000, two_check = 0;
+                    if(password > 9999){
+                        password /= 10000;
+                        two_check = 1;
+                        mvwprintw(win, 2, 7, "(First Password)");
+                    }
                     mvwprintw(win, 1, 5, "Enter Password: ");
                     echo();
                     curs_set(1);
@@ -235,7 +244,66 @@ void ask_password(int password, int x, int y, int floor_num){
                             wattron(win, COLOR_PAIR(10));
                             mvwprintw(win, 3, 12, "Correct");
                             password_doors[password_door_num].unlocked = 1;
+                            password_doors[password_door_num].time_unlocked = time(NULL);
                             wattroff(win, COLOR_PAIR(10));
+                            wgetch(win);
+                            if(two_check == 1){
+                                mvwprintw(win, 2, 7, "(Second Password)");
+                                mvwprintw(win, 1, 21, "    ");
+                            }
+                            tries = 0;
+                            while(tries < 3){
+                                echo();
+                                curs_set(1);
+                                mvwprintw(win, 3, 1, "                            ");
+                                mvwprintw(win, 1, 21, "    ");
+                                mvwscanw(win, 1, 21, "%d", &input);
+                                curs_set(0);
+                                noecho();
+                                if(input == password_2){
+                                    wattron(win, COLOR_PAIR(10));
+                                    mvwprintw(win, 3, 12, "Correct");
+                                    password_doors[password_door_num].unlocked = 1;
+                                    password_doors[password_door_num].time_unlocked = time(NULL);
+                                    wattroff(win, COLOR_PAIR(10));
+                                    wrefresh(win);
+                                    wgetch(win);
+                                    delwin(win);
+                                    noecho();
+                                    endwin();
+                                    return;
+                                }
+                                else{
+                                    noecho();
+                                    if(tries == 0){
+                                        wattron(win, COLOR_PAIR(11));
+                                        mvwprintw(win, 3, 6, "Wrong (First Try)");
+                                        wattroff(win, COLOR_PAIR(11));
+                                        wrefresh(win);
+                                        wgetch(win);
+                                    }
+                                    if(tries == 1){
+                                        wattron(win, COLOR_PAIR(12));
+                                        mvwprintw(win, 3, 6, "Wrong (Second Try)");
+                                        wattroff(win, COLOR_PAIR(12));
+                                        wrefresh(win);
+                                        wgetch(win);
+                                    }
+                                    if(tries == 2){
+                                        wattron(win, COLOR_PAIR(1));
+                                        mvwprintw(win, 3, 3, "Security Mode Activated.");
+                                        wattroff(win, COLOR_PAIR(1));
+                                        wrefresh(win);
+                                        wgetch(win);
+                                        delwin(win);
+                                        noecho();
+                                        
+                                        endwin();
+                                        return;
+                                    }
+                                    tries++;
+                                }
+                            }
                             wrefresh(win);
                             wgetch(win);
                             delwin(win);
@@ -658,7 +726,23 @@ void display_door_password(int password, int floor_num){
     print_map_with_colors(floor_num);
     for(int i = 30; i >= 0; i--){
         box(win, 0, 0);
-        mvwprintw(win, 1, (30 - 14) / 2, "Password: %d", password);
+        if(password <= 9999){
+            mvwprintw(win, 1, (30 - 14) / 2, "Password: %d", password);
+        }
+        else{
+            int password_1 = password / 10000, password_2 = password % 10000;
+            mvwprintw(win, 1, (30 - 20) / 2, "Passwords: %d, ", password_1);
+            if(password_2 < 1000){
+                wprintw(win, "0");
+            }
+            if(password_2 < 100){
+                wprintw(win, "00");
+            }
+            if(password_2 < 10){
+                wprintw(win, "000");
+            }
+            wprintw(win, "%d", password_2);
+        }
         wattron(win, A_REVERSE);
         mvwprintw(win, 3, (30 - strlen("Ok")) / 2, "Ok");
         wattroff(win, A_REVERSE);
@@ -891,7 +975,6 @@ void spell_list(){
     refresh();
 }
 
-
 int reverse(int password){
     int reversed = 0;
     for(int i = 0; i < 4; i++){
@@ -903,6 +986,9 @@ int reverse(int password){
 
 void print_password_doors(){
     for(int i = 0; i < password_doors_count; i++){
+        if(password_doors[i].unlocked == 1 && difftime(time(NULL), password_doors[i].time_unlocked) >= 30){
+            password_doors[i].unlocked = 0;
+        }
         attron(COLOR_PAIR(9));
         if(password_doors[i].unlocked == 1){
             attron(COLOR_PAIR(10));
@@ -2010,7 +2096,14 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             mvprintw(player.y, player.x, "\U0001FBC5");
             attroff(COLOR_PAIR(5));
             int password_door_num = find_door_to_button(player.x, player.y);
-            password_doors[password_door_num].password = rand_with_range(1000, 9999);
+            if(rand() % 4 == 0 && floor_num >= 3){
+                password_doors[password_door_num].password = rand_with_range(10001000, 99999999);
+                mvprintw(0,0,"%d",password_doors[password_door_num].password);
+                getch();
+            }
+            else{
+                password_doors[password_door_num].password = rand_with_range(1000, 9999);
+            }
             getch();
             print_map_with_colors(floor_num);
             
