@@ -1071,6 +1071,13 @@ void print_full_map(int floor_num){
         int y_start = rooms[i].y_top_left;
         int width = rooms[i].x_size;
         int height = rooms[i].y_size;
+        if(rooms[i].theme == 2){
+            attron(COLOR_PAIR(18));
+        }
+        if(rooms[i].theme == 3){
+            attron(COLOR_PAIR(15));
+        }
+
 
         mvprintw(y_start, x_start, "_");
         for(int j = 1; j <= width; j++){
