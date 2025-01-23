@@ -10,6 +10,8 @@ struct point{
     int x;
     int y;
     int full;
+    int secret;
+    int revealed;
 };
 
 typedef struct{
@@ -2197,11 +2199,19 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         }
     }
 
+    for(int i = 0; i < 50; i++){
+        if(rooms[find_room(doors[i].x, doors[i].y)].theme = 2){
+            doors[i].secret = 1;
+            mvprintw(x, y, "?");
+        }
+    }
+    getch();
+
     i = 0;
     while(i < password_doors_count){
         x = random_with_range(1, COLS);
         y = random_with_range(1, LINES);
-        if((mvinch(y, x) & A_CHARTEXT) == '+' && !is_neighbours_with('@', x, y)){
+        if((mvinch(y, x) & A_CHARTEXT) == '+' && !is_neighbours_with('@', x, y) && rooms[find_room(x, y)].theme != 2){
             attron(COLOR_PAIR(8));
             mvprintw(y, x, "@");
             password_doors[i].y = y;
