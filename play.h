@@ -392,7 +392,7 @@ int check_movement(int floor_num, int x, int y){
         spells[2]++;
     }
     
-    if(character == '<' || character == '^' || character == '*' || character == '$' || character == 'M' || character == 'd' || character == 'W' || character == 'A' || character == 'S' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f'){
+    if(character == 'T' || character == '<' || character == '^' || character == '*' || character == '$' || character == 'M' || character == 'd' || character == 'W' || character == 'A' || character == 'S' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f'){
         return 1;
     }
 
@@ -700,6 +700,24 @@ void generate_ancient_key(){
                 ancient_key.full = 1;
                 i++;
             }
+        }
+    }
+    attroff(COLOR_PAIR(7));
+}
+
+void generate_treasure(){
+    int weapon_count = rand_with_range(5, 10);
+    int i = 0;
+    int x, y;
+    attron(COLOR_PAIR(7));
+    while(1){
+        x = rand_with_range(1, COLS);
+        y = rand_with_range(1, LINES);
+        if((mvinch(y, x) & A_CHARTEXT) == '.'){
+            map[y][x].color_pair = 7;
+            mvprintw(y, x, "T");
+            map[y][x].ch = 'T';
+            break;
         }
     }
     attroff(COLOR_PAIR(7));
@@ -1045,9 +1063,6 @@ void print_full_map(int floor_num){
     mvprintw(LINES - 1, 130, "Ancient Keys:");
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
-    if(floor_num == 4){
-        mvprintw(1, COLS - 30, "Press q to Finish the Game.");
-    }
     mvprintw(LINES - 1, 37, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
@@ -1312,9 +1327,7 @@ void print_full_map(int floor_num){
     mvprintw(LINES - 1, 130, "Ancient Keys:");
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
-    if(floor_num == 4){
-        mvprintw(1, COLS - 30, "Press q to Finish the Game.");
-    }
+
     mvprintw(LINES - 1, 37, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
@@ -1337,9 +1350,7 @@ void print_map_with_colors(int floor_num){
     mvprintw(LINES - 1, 130, "Ancient Keys:");
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
-    if(floor_num == 4){
-        mvprintw(1, COLS - 30, "Press q to Finish the Game.");
-    }
+    
     mvprintw(LINES - 1, 37, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
@@ -1541,9 +1552,7 @@ void print_map_with_colors(int floor_num){
     mvprintw(LINES - 1, 130, "Ancient Keys:");
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
-    if(floor_num == 4){
-        mvprintw(1, COLS - 30, "Press q to Finish the Game.");
-    }
+
     mvprintw(LINES - 1, 37, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
@@ -1675,6 +1684,289 @@ int game_pause(){
     }
 }
 
+int treasure_room(){
+    clear();
+    //play_music("treasure.mp3");
+    player.x = COLS / 2;
+    player.y = LINES / 2 - 2;
+    player.under.ch = '.';
+    int x_start = 4;
+    int y_start = 3;
+    int width = COLS - 10;
+    int height = LINES - 8;
+    attron(COLOR_PAIR(9));
+    mvprintw(y_start, x_start, "_");
+    for(int j = 1; j <= width; j++){
+        move(y_start, x_start + j);
+        printw("_");
+    }
+    mvprintw(y_start, x_start + width + 1, "_");
+
+    for(int j = 1; j <= height; j++){
+        move(y_start + j, x_start);
+        printw("|");
+        for(int k = 1; k <= width; k++){
+            mvprintw(y_start + j, x_start + k, ".");
+        }
+        move(y_start + j, x_start + width + 1);
+        printw("|");
+    }
+
+    mvprintw(y_start + height + 1, x_start, "_");
+    for(int j = 1; j <= width; j++){
+        move(y_start + height + 1, x_start + j);
+        printw("_");
+    }
+    mvprintw(y_start + height + 1, x_start + width + 1, "_");
+
+    attron(COLOR_PAIR(5));
+    mvprintw(player.y, player.x, "\U0001FBC5");
+    attroff(COLOR_PAIR(5));
+
+    int gold_count = rand_with_range(80, 100);
+    int i = 0;
+    int x, y;
+    
+    while(i < gold_count){
+        x = rand_with_range(1, COLS);
+        y = rand_with_range(1, LINES);
+        attron(COLOR_PAIR(20));
+        if((mvinch(y, x) & A_CHARTEXT) == '.'){
+            
+            if(rand() % 10 == 0){
+                attron(COLOR_PAIR(15));
+                mvprintw(y, x, "x");
+                map[y][x].color_pair = 15;
+                attroff(COLOR_PAIR(15));
+            }
+            else{
+                attron(COLOR_PAIR(7));
+                mvprintw(y, x, "*");
+                map[y][x].color_pair = 7;
+                attroff(COLOR_PAIR(7));
+            }
+            i++;
+        }
+    }
+
+    struct point traps[50];
+    int trap_count = rand_with_range(30, 50);
+    i = 0;
+    while(i < trap_count){
+        x = rand_with_range(1, COLS);
+        y = rand_with_range(1, LINES);
+        if((mvinch(y, x) & A_CHARTEXT) == '.'){
+            traps[i].y = y;
+            traps[i].x = x;
+            i++;
+        }
+    }
+
+    int floor_num = 4;
+    while(1){
+        mvprintw(LINES - 1, 30, "Score:");
+        mvprintw(LINES - 1, 50, "Hits: 0");
+        mvprintw(LINES - 1, 70, "Str:");
+        mvprintw(LINES - 1, 90, "Gold:");
+        mvprintw(LINES - 1, 110, "Exp:");
+        mvprintw(LINES - 1, 130, "Ancient Keys:");
+
+        mvprintw(0, COLS - 31, "You are in the Treasure Room.");
+        mvprintw(1, COLS - 30, "Press q to Finish the Game.");
+        
+        mvprintw(LINES - 1, 37, "%d", gold);
+        mvprintw(LINES - 1, 96, "%d", gold);
+        mvprintw(LINES - 1, 75, "  ");
+        mvprintw(LINES - 1, 75, "%d", strength);
+
+        attron(COLOR_PAIR(5));
+        mvprintw(player.y, player.x, "\U0001FBC5");
+        attroff(COLOR_PAIR(5));
+        refresh();
+
+        mvprintw(LINES - 1, 96, "%d", gold);
+        mvprintw(LINES - 1, 75, "%d", strength);
+        mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
+
+        attron(COLOR_PAIR(5));
+        mvprintw(player.y, player.x, "\U0001FBC5");
+        attroff(COLOR_PAIR(5));
+
+        refresh();
+        
+        int c = getch();
+        
+
+        int f_check = 0;
+        if(c == 'f' || c == 'f'){
+            f_check = 1;
+            c = getch();
+        }
+        int g_check = 0;
+        if(c == 'T' || c == 'T'){
+            g_check = 1;
+            c = getch();
+        }
+        
+        if(c == 's' || c == 'S'){
+            for(int delta_x = -1; delta_x <= 1; delta_x++){
+                for(int delta_y = -1; delta_y <= 1; delta_y++){
+                    if(delta_x == 0 && delta_y == 0){
+                        continue;
+                    }
+
+                    reveal_trap(traps, trap_count, player.x + delta_x, player.y + delta_y);
+                }
+            }
+            c = getch();
+        }
+        
+        attron(COLOR_PAIR(9));
+        mvprintw(player.y, player.x, "%c", player.under.ch);
+
+        if((c == 'h' || c == 'H') && check_movement(floor_num, player.x - 1, player.y)){
+            if(f_check == 0){
+                player.x--;
+            }
+            else{
+                while(check_movement(floor_num, player.x - 1, player.y)){
+                    player.x--;
+                }
+            }
+        }
+        else if((c == 'j' || c == 'J') && check_movement(floor_num, player.x, player.y + 1)){
+            if(f_check == 0){
+                player.y++;
+            }
+            else{
+                while(check_movement(floor_num, player.x, player.y + 1)){
+                    player.y++;
+                }
+            }
+        }
+        else if((c == 'k' || c == 'K') && check_movement(floor_num, player.x, player.y - 1)){
+            if(f_check == 0){
+                player.y--;
+            }
+            else{
+                while(check_movement(floor_num, player.x, player.y - 1)){
+                    player.y--;
+                }
+            }
+        }
+        else if((c == 'l' || c == 'L') && check_movement(floor_num, player.x + 1, player.y)){
+            if(f_check == 0){
+                player.x++;
+            }
+            else{
+                while(check_movement(floor_num, player.x + 1, player.y)){
+                    player.x++;
+                }
+            }
+        }
+        else if((c == 'y' || c == 'Y') && check_movement(floor_num, player.x - 1, player.y - 1)){
+            if(f_check == 0){
+                player.x--;
+                player.y--;
+            }
+            else{
+                while(check_movement(floor_num, player.x - 1, player.y - 1)){
+                    player.x--;
+                    player.y--;
+                }
+            }
+        }
+        else if((c == 'u' || c == 'U') && check_movement(floor_num, player.x + 1, player.y - 1)){
+            if(f_check == 0){
+                player.x++;
+                player.y--;
+            }
+            else{
+                while(check_movement(floor_num, player.x + 1, player.y - 1)){
+                    player.x++;
+                    player.y--;
+                }
+            }
+        }
+        else if((c == 'b' || c == 'B') && check_movement(floor_num, player.x - 1, player.y + 1)){
+            if(f_check == 0){
+                player.x--;
+                player.y++;
+            }
+            else{
+                while(check_movement(floor_num, player.x - 1, player.y + 1)){
+                    player.x--;
+                    player.y++;
+                }
+            }
+        }
+        else if((c == 'n' || c == 'N') && check_movement(floor_num, player.x + 1, player.y + 1)){
+            if(f_check == 0){
+                player.x++;
+                player.y++;
+            }
+            else{
+                while(check_movement(floor_num, player.x + 1, player.y + 1)){
+                    player.x++;
+                    player.y++;
+                }
+            }
+        }
+        else if(c == 'e' || c == 'E'){
+            food_list(&strength);
+        }
+        else if(c == 'i' || c == 'I'){
+            weapon_list();
+        }
+        else if(c == 'x' || c == 'X'){
+            spell_list();
+        }
+        else if(c == 'q'){
+            attroff(COLOR_PAIR(9));
+            return -4;
+        }
+
+        player.under.ch = mvinch(player.y, player.x) & A_CHARTEXT;
+        player.under.color_pair = PAIR_NUMBER(mvinch(player.y, player.x) & A_COLOR); 
+
+        attron(COLOR_PAIR(5));
+        mvprintw(player.y, player.x, "\U0001FBC5");
+        attroff(COLOR_PAIR(5));
+
+        if(player.under.ch == '*' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
+            player.under.ch = '.';
+            map[player.y][player.x].ch = '.';
+            gold++;
+            mvprintw(0, 0, "You Found Gold.");
+            getch();
+            mvprintw(0, 0, "               ");
+        }
+        if(player.under.ch == 'x' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
+            player.under.ch = '.';
+            map[player.y][player.x].ch = '.';
+            gold += 10;
+            mvprintw(0, 0, "You Found Black Gold.");
+            getch();
+            mvprintw(0, 0, "                     ");
+        }
+
+        attron(COLOR_PAIR(5));
+        mvprintw(player.y, player.x, "\U0001FBC5");
+        attroff(COLOR_PAIR(5));
+        
+        int trap_num = check_trap(player.x, player.y, traps, trap_count, &strength);
+        if(trap_num != -1){
+            player.under.ch = '^';
+            map[player.y][player.x].color_pair = 21;
+            map[player.y][player.x].ch = '^';
+        }
+        if(strength == 0){
+            attroff(COLOR_PAIR(9));
+            return -6;
+        }
+    }
+}
+
 int enter_floor(char *username, char color, char difficulty, int floor_num, char *track_name){
     clear();
     start_time = time(NULL);
@@ -1802,7 +2094,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     if(color == 'b'){
         init_pair(5, COLOR_BLUE, COLOR_BLACK);
     }
-    if(color == 'g'){
+    if(color == 'T'){
         init_pair(5, COLOR_GREEN, COLOR_BLACK);
     }
     if(color == 'y'){
@@ -1870,6 +2162,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     generate_food();
     generate_spell();
     generate_ancient_key();
+    if(floor_num == 4){
+        generate_treasure();
+    }
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
             map[y][x].ch = (mvinch(y, x) & A_CHARTEXT);
@@ -1988,9 +2283,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         mvprintw(LINES - 1, 130, "Ancient Keys:");
 
         mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
-        if(floor_num == 4){
-            mvprintw(1, COLS - 30, "Press q to Finish the Game.");
-        }
+        
         mvprintw(LINES - 1, 37, "%d", gold);
         mvprintw(LINES - 1, 96, "%d", gold);
         mvprintw(LINES - 1, 75, "  ");
@@ -2020,7 +2313,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             c = getch();
         }
         int g_check = 0;
-        if(c == 'g' || c == 'G'){
+        if(c == 'T' || c == 'T'){
             g_check = 1;
             c = getch();
         }
@@ -2044,17 +2337,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         }
         
         attron(COLOR_PAIR(player.under.color_pair));
-        if(player.under.ch == '.'){
-            if(rooms[find_room(player.x, player.y)].theme = 1){
-                attron(COLOR_PAIR(21));
-            }
-            // if(rooms[find_room(player.x, player.y)].theme = 2){
-            //     attron(COLOR_PAIR(22));
-            // }
-            // if(rooms[find_room(player.x, player.y)].theme = 3){
-            //     attron(COLOR_PAIR(23));
-            // }
-        }
         mvprintw(player.y, player.x, "%c", player.under.ch);
         attroff(COLOR_PAIR(player.under.color_pair));
 
@@ -2237,18 +2519,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         else if(c == 'x' || c == 'X'){
             spell_list();
         }
-        else if(c == 'q' && floor_num == 4){
-            return -1;
-        }
-        else if(c == 27){
-            int choice = game_pause();
-            if(choice == 1){
-                return -1 * floor_num;
-            }
-            if(choice == 2){
-                return -5;
-            }
-        }
         
         for(int y = 0; y < LINES; y++){
             for(int x = 0; x < COLS; x++){
@@ -2364,6 +2634,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             mvprintw(0, 0, "You Found a Spell.");
             getch();
             mvprintw(0, 0, "                  ");
+        }
+        if(player.under.ch == 'T' && g_check == 0){
+            return treasure_room();
         }
         if(player.under.ch == '<'){
             attron(COLOR_PAIR(5));
@@ -2769,7 +3042,7 @@ void play(char *username, char color, char difficulty, int song){
         start_check = 0;
         clear();
     }
-
+    
     if(floor_num == -4){
         attron(A_BOLD);
         mvprintw(LINES / 2 - 2, (COLS - 7) / 2, "You Win");
@@ -2777,6 +3050,7 @@ void play(char *username, char color, char difficulty, int song){
         mvprintw(LINES / 2, (COLS - 8) / 2, "Score: %d", gold);
         mvprintw(LINES / 2 + 2, (COLS - 28) / 2, "Press Any Key to Continue...");
         getch();
+        return;
     }
     if(floor_num == -6){
         attron(A_BOLD);
