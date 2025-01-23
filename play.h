@@ -10,8 +10,6 @@ struct point{
     int x;
     int y;
     int full;
-    int secret;
-    int revealed;
 };
 
 typedef struct{
@@ -1581,27 +1579,27 @@ void initialize_map(){
 
 void reveal_room_by_window(int x, int y){
     int wall_x, wall_y;
-    if(map[y][x + 1].ch == '.'){
+    if(map[y][x - 1].ch == '.'){
         wall_x = x;
         wall_y = y;
         while(wall_x < COLS - 1 && map[wall_y][wall_x].ch != '|'){
             wall_x++;
         }
         if(wall_x >= 0 && wall_x < COLS){
-            int room = find_room(wall_x - 1, wall_y);
+            int room = find_room(wall_x, wall_y);
             if(room != -1){
                 rooms[room].explored = 1;
             }
         }
     }
-    if(map[y][x - 1].ch == '.'){
+    if(map[y][x + 1].ch == '.'){
         wall_x = x;
         wall_y = y;
         while(wall_x > 0 && map[wall_y][wall_x].ch != '|'){
-            wall_x--; 
+            wall_x--;
         }
         if(wall_x >= 0 && wall_x < COLS){
-            int room = find_room(wall_x + 1, wall_y);
+            int room = find_room(wall_x, wall_y);
             if(room != -1){
                 rooms[room].explored = 1;
             }
@@ -1614,7 +1612,7 @@ void reveal_room_by_window(int x, int y){
             wall_y--;
         }
         if(wall_y >= 0 && wall_y < LINES){
-            int room = find_room(wall_x, wall_y + 1);
+            int room = find_room(wall_x, wall_y);
             if(room != -1){
                 rooms[room].explored = 1;
             }
@@ -1627,9 +1625,9 @@ void reveal_room_by_window(int x, int y){
             wall_y++;
         }
         if(wall_y >= 0 && wall_y < LINES){
-            int room_index = find_room(wall_x, wall_y - 1);
-            if(room_index != -1){
-                rooms[room_index].explored = 1;
+            int room = find_room(wall_x, wall_y);
+            if(room != -1){
+                rooms[room].explored = 1;
             }
         }
     }
@@ -2160,7 +2158,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     generate_food();
     generate_spell();
     generate_ancient_key();
-    if(floor_num == 1){
+    if(floor_num == 4){
         generate_treasure();
     }
     for(int y = 0; y < LINES; y++){
@@ -2199,19 +2197,11 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         }
     }
 
-    for(int i = 0; i < 50; i++){
-        if(rooms[find_room(doors[i].x, doors[i].y)].theme = 2){
-            doors[i].secret = 1;
-            mvprintw(x, y, "?");
-        }
-    }
-    getch();
-
     i = 0;
     while(i < password_doors_count){
         x = random_with_range(1, COLS);
         y = random_with_range(1, LINES);
-        if((mvinch(y, x) & A_CHARTEXT) == '+' && !is_neighbours_with('@', x, y) && rooms[find_room(x, y)].theme != 2){
+        if((mvinch(y, x) & A_CHARTEXT) == '+' && !is_neighbours_with('@', x, y)){
             attron(COLOR_PAIR(8));
             mvprintw(y, x, "@");
             password_doors[i].y = y;
