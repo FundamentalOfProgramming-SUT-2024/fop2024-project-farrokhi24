@@ -1071,11 +1071,14 @@ void print_full_map(int floor_num){
         int y_start = rooms[i].y_top_left;
         int width = rooms[i].x_size;
         int height = rooms[i].y_size;
+        if(rooms[i].theme == 1){
+            attron(COLOR_PAIR(21));
+        }
         if(rooms[i].theme == 2){
-            attron(COLOR_PAIR(18));
+            attron(COLOR_PAIR(22));
         }
         if(rooms[i].theme == 3){
-            attron(COLOR_PAIR(15));
+            attron(COLOR_PAIR(23));
         }
 
 
@@ -1304,6 +1307,24 @@ void print_full_map(int floor_num){
         attroff(COLOR_PAIR(1));
         attroff(COLOR_PAIR(10));
     }
+    mvprintw(LINES - 1, 30, "Score:");
+    mvprintw(LINES - 1, 50, "Hits: 0");
+    mvprintw(LINES - 1, 70, "Str:");
+    mvprintw(LINES - 1, 90, "Gold:");
+    mvprintw(LINES - 1, 110, "Exp:");
+    mvprintw(LINES - 1, 130, "Ancient Keys:");
+
+    mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
+    if(floor_num == 4){
+        mvprintw(1, COLS - 30, "Press q to Finish the Game.");
+    }
+    mvprintw(LINES - 1, 37, "%d", gold);
+    mvprintw(LINES - 1, 96, "%d", gold);
+    mvprintw(LINES - 1, 75, "  ");
+    mvprintw(LINES - 1, 75, "%d", strength);
+    mvprintw(LINES - 1, 96, "%d", gold);
+    mvprintw(LINES - 1, 75, "%d", strength);
+    mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
 }
 
 void print_map_with_colors(int floor_num){
@@ -2373,6 +2394,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         if(ancient_key.x == player.x && ancient_key.y == player.y && ancient_key.full == 1 && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             ancient_key.full = 0;
+            print_map_with_colors(floor_num);
+            mvprintw(0, 0, "You Found an Ancient Key.");
+            getch();
+            mvprintw(0, 0, "                         ");
             ancient_key_count += 2;
         }
 

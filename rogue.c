@@ -15,6 +15,8 @@
 #define COLOR_PINK 18
 #define COLOR_SILVER 19
 #define COLOR_GOLD 20
+#define COLOR_DARK_PINK 21
+#define COLOR_LIGHT_GRAY 22
 
 int main(){
     setlocale(LC_ALL, "");
@@ -30,9 +32,11 @@ int main(){
     init_color(COLOR_PURPLE, 600, 0, 600);
     init_color(COLOR_BROWN, 823, 549, 431);
     init_color(COLOR_GRAY, 300, 300, 300);
+    init_color(COLOR_LIGHT_GRAY, 350, 350, 350);
     init_color(COLOR_PINK, 900, 0, 750);
     init_color(COLOR_SILVER, 600, 600, 600);
     init_color(COLOR_GOLD, 800, 600, 200);
+    init_color(COLOR_DARK_PINK, 600, 0, 450);
 
     init_pair(1, COLOR_RED, COLOR_BLACK);
     init_pair(2, COLOR_WHITE, COLOR_DARK_GOLD);
@@ -51,6 +55,8 @@ int main(){
     init_pair(18, COLOR_PINK, COLOR_BLACK);
     init_pair(20, COLOR_BLACK, COLOR_BLACK);
     init_pair(21, COLOR_WHITE, COLOR_BLACK);
+    init_pair(22, COLOR_DARK_PINK, COLOR_BLACK);
+    init_pair(23, COLOR_LIGHT_GRAY, COLOR_BLACK);
 
     noecho();
     int choice;
