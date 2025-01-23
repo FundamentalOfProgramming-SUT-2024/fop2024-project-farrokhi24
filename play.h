@@ -35,7 +35,7 @@ int default_weapon = 0;
 int spells[3] ={0, 0, 0};
 int ancient_key_count = 0;
 struct point ancient_key;
-long int start_time;
+long int start_time, enchant_time;
 int m_check = 0;
 
 struct player{
@@ -251,6 +251,13 @@ void ask_password(int password, int x, int y, int floor_num){
                             if(two_check == 1){
                                 mvwprintw(win, 2, 7, "(Second Password)");
                                 mvwprintw(win, 1, 21, "    ");
+                            }
+                            else{
+                                wrefresh(win);
+                                delwin(win);
+                                noecho();
+                                endwin();
+                                return;
                             }
                             tries = 0;
                             while(tries < 3){
@@ -1031,6 +1038,8 @@ void reveal_trap(struct point *traps, int trap_count, int x, int y){
 }
 
 void print_full_map(int floor_num){
+    attroff(COLOR_PAIR(20));
+
     mvprintw(LINES - 1, 30, "Score:");
     mvprintw(LINES - 1, 50, "Hits: 0");
     mvprintw(LINES - 1, 70, "Str:");
@@ -1156,11 +1165,102 @@ void print_full_map(int floor_num){
         }
     }
 
+    attroff(COLOR_PAIR(20));
+    int hallway_check = 1;
+    for(int y = player.y - 1; y >= player.y - 5 && y >= 0; y--){
+        if((mvinch(y, player.x) & A_CHARTEXT) != '#'){
+            hallway_check = 0;
+            break;
+        }
+    }
+
+    if(hallway_check){
+        for(int y = player.y - 1; y >= player.y - 5 && y >= 0; y--){
+            attron(COLOR_PAIR(21));
+            mvprintw(y, player.x, "#");
+            attroff(COLOR_PAIR(21));
+            map[y][player.x].ch = '#';
+            map[y][player.x].color_pair = 21;
+        }
+    }
+
+    hallway_check = 1;
+    for(int y = player.y + 1; y <= player.y + 5 && y < LINES; y++){
+        if((mvinch(y, player.x) & A_CHARTEXT) != '#'){
+            hallway_check = 0;
+            break;
+        }
+    }
+
+    if(hallway_check){
+        for(int y = player.y + 1; y <= player.y + 5 && y < LINES; y++){
+            attron(COLOR_PAIR(21));
+            mvprintw(y, player.x, "#");
+            attroff(COLOR_PAIR(21));
+            map[y][player.x].ch = '#';
+            map[y][player.x].color_pair = 21;
+        }
+    }
+
+    hallway_check = 1;
+    for(int x = player.x - 1; x >= player.x - 5 && x >= 0; x--){
+        if((mvinch(player.y, x) & A_CHARTEXT) != '#'){
+            hallway_check = 0;
+            break;
+        }
+    }
+
+    if(hallway_check){
+        for(int x = player.x - 1; x >= player.x - 5 && x >= 0; x--){
+            attron(COLOR_PAIR(21));
+            mvprintw(player.y, x, "#");
+            attroff(COLOR_PAIR(21));
+            map[player.y][x].ch = '#';
+            map[player.y][x].color_pair = 21;
+        }
+    }
+
+    hallway_check = 1;
+    for(int x = player.x + 1; x <= player.x + 5 && x < COLS; x++){
+        if((mvinch(player.y, x) & A_CHARTEXT) != '#'){
+            hallway_check = 0;
+            break;
+        }
+    }
+
+    if(hallway_check){
+        for(int x = player.x + 1; x <= player.x + 5 && x < COLS; x++){
+            attron(COLOR_PAIR(21));
+            mvprintw(player.y, x, "#");
+            attroff(COLOR_PAIR(21));
+            map[player.y][x].ch = '#';
+            map[player.y][x].color_pair = 21;
+        }
+    }
+
+    for(int y = player.y - 1; y <= player.y + 1; y++){
+        if(y < 0 || y >= LINES){
+            continue;
+        }
+        for(int x = player.x - 1; x <= player.x + 1; x++){
+            if(x < 0 || x >= COLS){
+                continue;
+            }
+            if((mvinch(y, x) & A_CHARTEXT) == '#'){
+                attron(COLOR_PAIR(21));
+                mvprintw(y, x, "#");
+                attroff(COLOR_PAIR(21));
+                map[y][x].ch = '#';
+                map[y][x].color_pair = 21;
+            }
+        }
+    }
+
+
     if(ancient_key.full == 1){
         attron(COLOR_PAIR(7));
         mvprintw(ancient_key.y, ancient_key.x, "\U000025B3");
         attroff(COLOR_PAIR(7));
-        attroff(COLOR_PAIR(20));
     }
 
     init_pair(21, COLOR_WHITE, COLOR_BLACK);
@@ -1169,12 +1269,34 @@ void print_full_map(int floor_num){
         mvprintw(player.y, player.x, "+");
         
     }
-
-    for(int i = 0; i < 50; i++){
-        attron(COLOR_PAIR(21));
-        mvprintw(doors[i].y, doors[i].x, "+");
+    
+    for(int i = 0; i < password_doors_count; i++){
+        if(password_doors[i].unlocked == 1 && difftime(time(NULL), password_doors[i].time_unlocked) >= 30){
+            password_doors[i].unlocked = 0;
+        }
+        attron(COLOR_PAIR(9));
+        if(password_doors[i].unlocked == 1){
+            attron(COLOR_PAIR(10));
+        }
+        else{
+            attron(COLOR_PAIR(1));
+        }
+        if((abs(player.x - password_doors[i].x) <= 1) && (abs(player.y - password_doors[i].y) <= 1)){
+            if(password_doors[i].unlocked == 0){
+                attron(COLOR_PAIR(1));
+            }
+            else{
+                attron(COLOR_PAIR(10));
+            }
+        }
+        mvprintw(password_doors[i].y, password_doors[i].x, "@");
+        attron(COLOR_PAIR(9));
+        mvprintw(password_doors[i].y_button, password_doors[i].x_button, "&");
+        attroff(COLOR_PAIR(9));
+        
+        attroff(COLOR_PAIR(1));
+        attroff(COLOR_PAIR(10));
     }
-    print_password_doors();
 }
 
 void print_map_with_colors(int floor_num){
@@ -1727,7 +1849,12 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         for(int x = 0; x < COLS; x++){
             map[y][x].ch = (mvinch(y, x) & A_CHARTEXT);
             map[y][x].color_pair = PAIR_NUMBER(mvinch(y, x) & A_COLOR);
-            
+            if(map[y][x].ch == '!'){
+                map[y][x].ch = '#';
+                attron(COLOR_PAIR(21));
+                mvprintw(0, 0, "#");
+                map[y][x].color_pair = 21;
+            }
         }
     }
 
@@ -1827,7 +1954,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             }
             hunger_full_start_time = current_time;
         }
-        print_password_doors();
+        
         mvprintw(LINES - 1, 30, "Score:");
         mvprintw(LINES - 1, 50, "Hits: 0");
         mvprintw(LINES - 1, 70, "Str:");
@@ -1875,6 +2002,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         
         if(c == 'm' || c == 'M'){
             m_check = m_check ^ 1;
+            print_map_with_colors(floor_num);
         }
 
         if(c == 's' || c == 'S'){
@@ -1889,14 +2017,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             }
             c = getch();
         }
-        for(int i = 0; i < 50; i++){
-            if(rooms[find_room(doors[i].x, doors[i].y)].explored == 0){
-                attron(COLOR_PAIR(20));
-            }
-            mvprintw(doors[i].y, doors[i].x, "+");
-            attroff(COLOR_PAIR(20));
-        }
-        print_password_doors();
+        
         attron(COLOR_PAIR(player.under.color_pair));
         if(player.under.ch == '.'){
             attroff(COLOR_PAIR(player.under.color_pair));
@@ -2271,15 +2392,20 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 if(current_room != prev_room){
                     if(rooms[current_room].theme == 2){
                         play_music("enchant.mp3");
+                        enchant_time = time(NULL);
                     }
                     else if(rooms[current_room].theme == 3){
                         play_music("nightmare.mp3");
                     }
                 }
             }
-        } 
+        }
         else if(player.under.ch == '#' && prev_room != -1 && rooms[prev_room].theme != 1 && strcmp(track_name, "off") != 0){
             play_music(track_name);
+        }
+        if((difftime(time(NULL), enchant_time) >= 5) && (rooms[current_room].theme == 2)){
+            strength--;
+            enchant_time = time(NULL);
         }
         prev_room = current_room;
         if(rooms[current_room].theme == 3){
@@ -2392,6 +2518,11 @@ void save_floor_map(char* filename, int floor_num) {
             if ((ch != '#') && (ch != '_') && (ch != '|') && (ch != '+') && (ch != '=') && (ch != ' ')) {
                 ch = '.';
             }
+            if(ch == '#'){
+                if(map[y][x].color_pair != 20){
+                    ch = '!';
+                }
+            }
             for (int i = 0; i < room_count; i++) {
                 if (rooms[i].explored == 1 && rooms[i].y_top_left == y && rooms[i].x_top_left == x) {
                     ch = 'E';
@@ -2474,6 +2605,11 @@ void save_game(char* filename, int floor_num){
             char ch = map[y][x].ch;
             if((ch != '#') && (ch != '_') && (ch != '|') && (ch != '+') && (ch != '=') && (ch != ' ')){
                 ch = '.';
+            }
+            if(ch == '#'){
+                if(map[y][x].color_pair != 20){
+                    ch = '!';
+                }
             }
             for(int i = 0; i < room_count; i++){
                 if(rooms[i].explored == 1 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
