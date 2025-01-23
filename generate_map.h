@@ -233,7 +233,7 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
             if(mvinch(y, x - 1) == '#' && mvinch(y, x) == '+' && mvinch(y, x + 1) == '+'){
-                if(mvinch(y - 1, x) == '|' || mvinch(y - 1, x + 1) == '.'){
+                if(mvinch(y - 1, x) == '|' || mvinch(y - 1, x + 1) == '.'){ //Lower Left to Right +
                     mvprintw(y + 1, x - 1, "#");
                     int i = 0;
                     while(mvinch(y, x + i) == '+'){
@@ -247,7 +247,7 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
                     }
                 }
 
-                if(mvinch(y + 1, x) == '|' || mvinch(y + 1, x + 1) == '.'){
+                if(mvinch(y + 1, x) == '|' || mvinch(y + 1, x + 1) == '.'){ //Upper Left to Right +
                     mvprintw(y - 1, x - 1, "#");
                     int i = 0;
                     while(mvinch(y, x + i) == '+'){
@@ -256,13 +256,15 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
                         i++;
                     }
                     mvprintw(y - 1, x + i, "#");
+                    mvprintw(y - 1, x - 2, "#");
                     if(mvinch(y, x + i) == '_'){
                         mvprintw(y, x + i, "+");
                     }
+                    mvprintw(y, x - 1, "U");
                 }
             }
             if(mvinch(y, x + 1) == '#' && mvinch(y, x) == '+' && mvinch(y, x - 1) == '+'){
-                if(mvinch(y - 1, x) == '|'){
+                if(mvinch(y - 1, x) == '|' || mvinch(y - 1, x - 1) == '.'){ //Lower Right to Left +
                     mvprintw(y + 1, x - 1, "#");
                     int i = 0;
                     while(mvinch(y, x + i) == '+'){
@@ -271,20 +273,22 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
                         i--;
                     }
                     mvprintw(y + 1, x + i, "#");
+                    mvprintw(y + 1, x + 1, "#");
                     if(mvinch(y, x + i) == '_'){
                         mvprintw(y, x + i, "+");
                     }
                 }
 
-                if(mvinch(y + 1, x) == '|'){
+                if(mvinch(y + 1, x) == '|' || mvinch(y + 1, x - 1) == '.'){ //Upper Right to Left +
                     mvprintw(y - 1, x - 1, "#");
                     int i = 0;
                     while(mvinch(y, x + i) == '+'){
                         mvprintw(y, x + i, "_");
-                        mvprintw(y + 1, x + i, "#");
+                        mvprintw(y - 1, x + i, "#");
                         i--;
                     }
                     mvprintw(y - 1, x + i, "#");
+                    mvprintw(y - 1, x + 1, "#");
                     if(mvinch(y, x + i) == '_'){
                         mvprintw(y, x + i, "+");
                     }
@@ -292,7 +296,7 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
             }
 
             if(mvinch(y + 1, x) == '#' && mvinch(y, x) == '+' && mvinch(y - 1, x) == '+'){
-                if(mvinch(y, x - 1) == '_'){
+                if(mvinch(y, x - 1) == '_' || mvinch(y - 1, x - 1) == '.'){ //Right Down to Up ---------?
                     mvprintw(y, x + 1, "#");
                     int i = 0;
                     while(mvinch(y - i, x) == '+'){
@@ -300,10 +304,14 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
                         mvprintw(y - i, x + 1, "#");
                         i++;
                     }
+                    mvprintw(y, x , "_");
+                    mvprintw(y, x - 1 , "_");
                     mvprintw(y - i, x + 1, "#");
+                    mvprintw(y + 1, x + 1, "#");
+                    mvprintw(y + 1, x - 1, " ");
                 }
 
-                if(mvinch(y, x + 1) == '_'){
+                if(mvinch(y, x + 1) == '_' || mvinch(y - 1, x - 1) == '.'){ //Left Down to Up
                     mvprintw(y + 1, x - 1, "#");
                     int i = 0;
                     while(mvinch(y - i, x) == '+'){
@@ -316,7 +324,7 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
             }
 
             if(mvinch(y - 1, x) == '#' && mvinch(y, x) == '+' && mvinch(y + 1, x) == '+'){
-                if(mvinch(y, x - 1) == '_'){
+                if(mvinch(y, x - 1) == '_' || mvinch(y + 1, x - 1) == '.'){ //Right Up to Down +
                     mvprintw(y, x + 1, "#");
                     int i = 0;
                     while(mvinch(y + i, x) == '+'){
@@ -324,10 +332,13 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
                         mvprintw(y + i, x + 1, "#");
                         i++;
                     }
+                    mvprintw(y, x , "_");
+                    mvprintw(y - 1, x + 1, "#");
                     mvprintw(y + i, x + 1, "#");
+                    mvprintw(y + i, x, "+");
                 }
 
-                if(mvinch(y, x + 1) == '_'){
+                if(mvinch(y, x + 1) == '_' || mvinch(y + 1, x + 1) == '.'){ //Left Up to Down ----------?
                     mvprintw(y, x - 1, "#");
                     int i = 0;
                     while(mvinch(y + i, x) == '+'){
@@ -335,6 +346,11 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
                         mvprintw(y + i, x - 1, "#");
                         i++;
                     }
+                    mvprintw(y - 1, x, "U");
+                    mvprintw(y, x, "|");
+                    mvprintw(y, x - 1, "#");
+                    mvprintw(y - 2, x - 1, "#");
+                    mvprintw(y - 1, x - 1, "#");
                     mvprintw(y + i, x - 1, "#");
                 }
             }
@@ -359,7 +375,7 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
 
 void generate_map(char *username, char difficulty){
     srand(time(0));
-    for(int i = 1; i <= 4; i++){
+    for(int i = 1; i <= 20; i++){
         generate_floor_map(username, difficulty, i);
     }
 }

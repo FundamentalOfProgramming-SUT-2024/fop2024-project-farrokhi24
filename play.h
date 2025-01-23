@@ -411,7 +411,7 @@ int check_movement(int floor_num, int x, int y){
 }
 
 int is_top_left(int x, int y){
-    if(mvinch(y, x) == 'U' || mvinch(y, x) == 'E' && mvinch(y + 1, x) == '|' && mvinch(y, x + 1) == '_'){
+    if(mvinch(y, x) == 'U' || mvinch(y, x) == 'E' && (mvinch(y + 1, x) == '|' || mvinch(y + 1, x) == '=') && (mvinch(y, x + 1) == '_' || mvinch(y, x + 1) == '=')){
         return 1;
     }
     return 0;
