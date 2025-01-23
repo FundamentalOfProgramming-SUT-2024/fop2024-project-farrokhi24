@@ -411,7 +411,7 @@ int check_movement(int floor_num, int x, int y){
 }
 
 int is_top_left(int x, int y){
-    if(mvinch(y, x) == 'U' || mvinch(y, x) == 'E' && (mvinch(y + 1, x) == '|' || mvinch(y + 1, x) == '=') && (mvinch(y, x + 1) == '_' || mvinch(y, x + 1) == '=')){
+    if(mvinch(y, x) == 'r' || mvinch(y, x) == 'R' || mvinch(y, x) == 'e' || mvinch(y, x) == 'E'|| mvinch(y, x) == 'n' && (mvinch(y + 1, x) == '|' || mvinch(y + 1, x) == '=') && (mvinch(y, x + 1) == '_' || mvinch(y, x + 1) == '=')){
         return 1;
     }
     return 0;
@@ -1686,7 +1686,7 @@ int game_pause(){
 
 int treasure_room(){
     clear();
-    //play_music("treasure.mp3");
+    play_music("treasure.mp3");
     player.x = COLS / 2;
     player.y = LINES / 2 - 2;
     player.under.ch = '.';
@@ -2052,11 +2052,25 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             if(is_top_left(x, y) && room_num <= room_count){
                 rooms[room_num].x_top_left = x;
                 rooms[room_num].y_top_left = y;
-                if((mvinch(y, x) & A_CHARTEXT) == 'U'){
+                if((mvinch(y, x) & A_CHARTEXT) == 'r'){
                     rooms[room_num].explored = 0;
+                    rooms[room_num].theme = 1;
                 }
-                else{
+                if((mvinch(y, x) & A_CHARTEXT) == 'R'){
                     rooms[room_num].explored = 1;
+                    rooms[room_num].theme = 1;
+                }
+                if((mvinch(y, x) & A_CHARTEXT) == 'e'){
+                    rooms[room_num].explored = 0;
+                    rooms[room_num].theme = 2;
+                }
+                if((mvinch(y, x) & A_CHARTEXT) == 'E'){
+                    rooms[room_num].explored = 1;
+                    rooms[room_num].theme = 2;
+                }
+                if((mvinch(y, x) & A_CHARTEXT) == 'n'){
+                    rooms[room_num].explored = 0;
+                    rooms[room_num].theme = 3;
                 }
                 mvprintw(y, x, "_");
                 map[y][x].ch = '_';
@@ -2127,24 +2141,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     }
     rooms[find_room(staircases[floor_num].x, staircases[floor_num].y)].theme = 1;
 
-    for(int i = 0; i < room_count; i++){
-        int random_theme = rand();
-        if(rooms[i].explored == 0){
-            if(random_theme % 10 < 5){
-                rooms[i].theme = 1;
-            }
-            else if(random_theme % 10 < 8){
-                rooms[i].theme = 2;
-            }
-            else{
-                rooms[i].theme = 3;
-            }
-        }
-        else{
-            rooms[i].theme = 1;
-        }
-    }
-
     print_rooms();
 
     attron(COLOR_PAIR(20));
@@ -2162,7 +2158,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     generate_food();
     generate_spell();
     generate_ancient_key();
-    if(floor_num == 4){
+    if(floor_num == 1){
         generate_treasure();
     }
     for(int y = 0; y < LINES; y++){
@@ -2519,6 +2515,15 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         else if(c == 'x' || c == 'X'){
             spell_list();
         }
+        else if(c == 27){
+            int choice = game_pause();
+            if(choice == 1){
+                return -1 * floor_num;
+            }
+            if(choice == 2){
+                return -5;
+            }
+        }
         
         for(int y = 0; y < LINES; y++){
             for(int x = 0; x < COLS; x++){
@@ -2786,7 +2791,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     endwin();
 }
 
-void save_floor_map(char* filename, int floor_num) {
+void save_floor_map(char* filename, int floor_num){
     FILE *file = fopen(filename, "r+");
 
     fseek(file, 0, SEEK_END);
@@ -2807,18 +2812,20 @@ void save_floor_map(char* filename, int floor_num) {
     char *part1;
     char *part2;
 
-    if (room_count_ptr) {
+    if(room_count_ptr){
         long diff1 = room_count_ptr - data;
         part1 = malloc(diff1 + 1);
         strncpy(part1, data, diff1);
         part1[diff1] = '\0';
 
-        if (next_floor_ptr) {
+        if(next_floor_ptr){
             part2 = strdup(next_floor_ptr);
-        } else {
+        }
+        else{
             part2 = "";
         }
-    } else {
+    }
+    else{
         part1 = strdup(data);
         part2 = "";
     }
@@ -2826,10 +2833,10 @@ void save_floor_map(char* filename, int floor_num) {
     char new_text[10000] = "";
     snprintf(new_text, sizeof(new_text), "Room Count%d: %d\nMap%d:\n", floor_num, room_count, floor_num);
 
-    for (int y = 0; y < LINES; y++) {
-        for (int x = 0; x < COLS; x++) {
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
             char ch = map[y][x].ch;
-            if ((ch != '#') && (ch != '_') && (ch != '|') && (ch != '+') && (ch != '=') && (ch != ' ')) {
+            if((ch != '#') && (ch != '_') && (ch != '|') && (ch != '+') && (ch != '=') && (ch != ' ')){
                 ch = '.';
             }
             if(ch == '#'){
@@ -2837,11 +2844,25 @@ void save_floor_map(char* filename, int floor_num) {
                     ch = '!';
                 }
             }
-            for (int i = 0; i < room_count; i++) {
-                if (rooms[i].explored == 1 && rooms[i].y_top_left == y && rooms[i].x_top_left == x) {
-                    ch = 'E';
-                } else if (rooms[i].explored == 0 && rooms[i].y_top_left == y && rooms[i].x_top_left == x) {
-                    ch = 'U';
+            for(int i = 0; i < room_count; i++){
+                if(rooms[i].explored == 1 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
+                    if(rooms[i].theme == 1){
+                        ch = 'R';
+                    }
+                    if(rooms[i].theme == 2){
+                        ch = 'E';
+                    }
+                }
+                else if(rooms[i].explored == 0 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
+                    if(rooms[i].theme == 1){
+                        ch = 'r';
+                    }
+                    if(rooms[i].theme == 2){
+                        ch = 'e';
+                    }
+                    if(rooms[i].theme == 3){
+                        ch = 'n';
+                    }
                 }
             }
             char ch_str[2];
@@ -2927,10 +2948,23 @@ void save_game(char* filename, int floor_num){
             }
             for(int i = 0; i < room_count; i++){
                 if(rooms[i].explored == 1 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
-                    ch = 'E';
+                    if(rooms[i].theme == 1){
+                        ch = 'R';
+                    }
+                    if(rooms[i].theme == 2){
+                        ch = 'E';
+                    }
                 }
                 else if(rooms[i].explored == 0 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
-                    ch = 'U';
+                    if(rooms[i].theme == 1){
+                        ch = 'r';
+                    }
+                    if(rooms[i].theme == 2){
+                        ch = 'e';
+                    }
+                    if(rooms[i].theme == 3){
+                        ch = 'n';
+                    }
                 }
             }
             char ch_str[2];
@@ -3028,14 +3062,15 @@ void play(char *username, char color, char difficulty, int song){
     fclose(file);
     char track_name[15];
 
-    if (song != 0) {
+    if(song != 0){
         snprintf(track_name, sizeof(track_name), "track_%d.mp3", song);
-    } else {
+    }
+    else{
         snprintf(track_name, sizeof(track_name), "off");
     }
 
     start_check = 1;
-    while (floor_num >= 0) {
+    while (floor_num >= 0){
         int temp = floor_num;
         floor_num = enter_floor(username, color, difficulty, floor_num, track_name);
         save_floor_map(filename, abs(temp));

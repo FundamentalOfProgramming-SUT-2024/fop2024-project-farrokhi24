@@ -357,6 +357,41 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
         }
     }
 
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
+            if(mvinch(y, x) == 'U'){
+                int random_theme = rand();
+                if((random_theme % 10) < 5){
+                    mvprintw(y, x, "r");
+                }
+                else if((random_theme % 10) < 8){
+                    mvprintw(y, x, "e");
+                }
+                else{
+                    mvprintw(y, x, "n");
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < room_count; i++){
+        int random_theme = rand();
+        if(rooms[i].explored == 0){
+            if(random_theme % 10 < 5){
+                rooms[i].theme = 1;
+            }
+            else if(random_theme % 10 < 8){
+                rooms[i].theme = 2;
+            }
+            else{
+                rooms[i].theme = 3;
+            }
+        }
+        else{
+            rooms[i].theme = 1;
+        }
+    }
+
     char filename[100];
     snprintf(filename, sizeof(filename), "%s.txt", username);
     FILE *map_file = fopen(filename, "a");
