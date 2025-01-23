@@ -392,7 +392,7 @@ int check_movement(int floor_num, int x, int y){
         spells[2]++;
     }
     
-    if(character == '<' || character == '^' || character == '*' || character == '$' || character == 'M' || character == 'D' || character == 'W' || character == 'A' || character == 'S' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f'){
+    if(character == '<' || character == '^' || character == '*' || character == '$' || character == 'M' || character == 'd' || character == 'W' || character == 'A' || character == 'S' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f'){
         return 1;
     }
 
@@ -402,7 +402,6 @@ int check_movement(int floor_num, int x, int y){
 
     if(character == '@'){
         attron(COLOR_PAIR(5));
-    
         int password_door_num = find_password_door(x, y);
         ask_password(password_doors[password_door_num].password, x, y, floor_num);
         mvprintw(player.y, player.x, "%c", player.under.ch);
@@ -420,18 +419,16 @@ int is_top_left(int x, int y){
 
 void print_rooms(){
     for(int i = 0; i < room_count; i++){
-        if(rooms[i].theme == 1){
-            attron(COLOR_PAIR(21));
-        }
-        if(rooms[i].theme == 2){
-            attron(COLOR_PAIR(9));
-        }
-
         if(rooms[i].explored == 0){
             attron(COLOR_PAIR(20));
         }
         else{
-            attroff(COLOR_PAIR(20));
+            if(rooms[i].theme == 1){
+                attron(COLOR_PAIR(21));
+            }
+            if(rooms[i].theme == 2){
+                attron(COLOR_PAIR(22));
+            }
         }
 
         int x_start = rooms[i].x_top_left;
@@ -602,8 +599,8 @@ void generate_weapon(){
                 map[y][x].ch = 'M';
             }
             if(random == 1){
-                mvprintw(y, x, "D");
-                map[y][x].ch = 'D';
+                mvprintw(y, x, "d");
+                map[y][x].ch = 'd';
             }
             if(random == 2){
                 mvprintw(y, x, "W");
@@ -1130,7 +1127,7 @@ void print_full_map(int floor_num){
                 if(map[y][x].ch == 'x'){
                     attron(COLOR_PAIR(15));
                 }
-                if(map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
+                if(map[y][x].ch == 'M' || map[y][x].ch == 'd' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
                     attron(COLOR_PAIR(16));
                 }
                 if(map[y][x].ch == 'f' && !map[y][x].color_check){
@@ -1378,7 +1375,7 @@ void print_map_with_colors(int floor_num){
                     if(map[y][x].ch == 'x'){
                         attron(COLOR_PAIR(15));
                     }
-                    if(map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
+                    if(map[y][x].ch == 'M' || map[y][x].ch == 'd' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
                         attron(COLOR_PAIR(16));
                     }
                     if(map[y][x].ch == 'f' && map[y][x].color_pair == 20 && !map[y][x].color_check){
@@ -2048,7 +2045,15 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         
         attron(COLOR_PAIR(player.under.color_pair));
         if(player.under.ch == '.'){
-            attroff(COLOR_PAIR(player.under.color_pair));
+            if(rooms[find_room(player.x, player.y)].theme = 1){
+                attron(COLOR_PAIR(21));
+            }
+            // if(rooms[find_room(player.x, player.y)].theme = 2){
+            //     attron(COLOR_PAIR(22));
+            // }
+            // if(rooms[find_room(player.x, player.y)].theme = 3){
+            //     attron(COLOR_PAIR(23));
+            // }
         }
         mvprintw(player.y, player.x, "%c", player.under.ch);
         attroff(COLOR_PAIR(player.under.color_pair));
@@ -2316,7 +2321,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             getch();
             mvprintw(0, 0, "                 ");
         }
-        if(player.under.ch == 'D' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
+        if(player.under.ch == 'd' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[1]++;
@@ -2441,6 +2446,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         }
         prev_room = current_room;
         if(rooms[current_room].theme == 3){
+            attron(COLOR_PAIR(23));
             for(int delta_x = -1; delta_x <= 1; delta_x++){
                 for(int delta_y = -1; delta_y <= 1; delta_y++){
                     int x = player.x + delta_x;
@@ -2453,7 +2459,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                         if(map[y][x].ch == 'x'){
                             attron(COLOR_PAIR(15));
                         }
-                        if(map[y][x].ch == 'M' || map[y][x].ch == 'D' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
+                        if(map[y][x].ch == 'M' || map[y][x].ch == 'd' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
                             attron(COLOR_PAIR(16));
                         }
                         if(map[y][x].ch == 'f'){
@@ -2488,6 +2494,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                             }
                             map[y][x].color_check = 1;
                             attron(COLOR_PAIR(map[y][x].color_pair));
+                        }
+                        if((map[y][x].ch == '.') || (map[y][x].ch == '_') || (map[y][x].ch == '|')){
+                            attron(COLOR_PAIR(23));
                         }
                         mvprintw(y, x, "%c", map[y][x].ch);
                         attroff(COLOR_PAIR(map[y][x].color_pair));
