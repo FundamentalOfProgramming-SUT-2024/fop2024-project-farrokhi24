@@ -42,11 +42,14 @@ struct player{
     int x;
     int y;
     character under;
+    int hits;
 };
 
 struct player player;
+struct player enemies[5];
 
 void print_map_with_colors(int floor_num);
+int find_room(int x, int y);
 int random_with_range(int min_rand, int max_rand){
     return ((rand() % (max_rand - min_rand + 1)) + min_rand);
 }
@@ -78,6 +81,17 @@ int find_door_to_button(int x_button, int y_button){
         if(abs(password_doors[i].x - x_button) == 1 && abs(password_doors[i].y - y_button) == 1){
             return i;
         }
+    }
+}
+
+void print_enemies(){
+    char string[6] = "DFGSU";
+    for(int i = 0; i < 5; i++){
+        if(rooms[find_room(enemies[i].x, enemies[i].y)].explored == 0){
+            attron(COLOR_PAIR(20));
+        }
+        mvprintw(enemies[i].y, enemies[i].x, "%c", string[i]);
+        attroff(COLOR_PAIR(20));
     }
 }
 
@@ -392,7 +406,7 @@ int check_movement(int floor_num, int x, int y){
         spells[2]++;
     }
     
-    if(character == 'T' || character == '<' || character == '^' || character == '*' || character == '$' || character == 'M' || character == 'd' || character == 'W' || character == 'A' || character == 'S' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f'){
+    if(character == 'T' || character == '<' || character == '^' || character == '*' || character == '$' || character == 'm' || character == 'd' || character == 'w' || character == 'a' || character == 's' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f'){
         return 1;
     }
 
@@ -466,6 +480,8 @@ void print_rooms(){
     attron(COLOR_PAIR(5));
     mvprintw(player.y, player.x, "\U0001FBC5");
     attroff(COLOR_PAIR(5));
+
+    print_enemies();
 }
 
 int find_room(int x, int y){
@@ -595,24 +611,24 @@ void generate_weapon(){
             }
             int random = rand() % 6;
             if(random == 0){
-                mvprintw(y, x, "M");
-                map[y][x].ch = 'M';
+                mvprintw(y, x, "m");
+                map[y][x].ch = 'm';
             }
             if(random == 1){
                 mvprintw(y, x, "d");
                 map[y][x].ch = 'd';
             }
             if(random == 2){
-                mvprintw(y, x, "W");
-                map[y][x].ch = 'W';
+                mvprintw(y, x, "w");
+                map[y][x].ch = 'w';
             }
             if(random == 3){
-                mvprintw(y, x, "A");
-                map[y][x].ch = 'A';
+                mvprintw(y, x, "a");
+                map[y][x].ch = 'a';
             }
             if(random == 4){
                 mvprintw(y, x, "S");
-                map[y][x].ch = 'S';
+                map[y][x].ch = 's';
             }
             i++;
         }
@@ -740,6 +756,8 @@ void display_door_password(int password, int floor_num){
     attron(COLOR_PAIR(5));
     mvprintw(player.y, player.x, "\U0001FBC5");
     attroff(COLOR_PAIR(5));
+
+    print_enemies();
     
     WINDOW *win = newwin(5, 30, (LINES - 5) / 2, (COLS - 30) / 2);
     keypad(win, TRUE);
@@ -1056,17 +1074,18 @@ void print_full_map(int floor_num){
     attroff(COLOR_PAIR(20));
 
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits: 0");
-    mvprintw(LINES - 1, 70, "Str:");
+    mvprintw(LINES - 1, 50, "Hits:   /15");
+    mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
     mvprintw(LINES - 1, 130, "Ancient Keys:");
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
-    mvprintw(LINES - 1, 37, "%d", gold);
+    mvprintw(LINES - 1, 38, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
-    mvprintw(LINES - 1, 75, "%d", strength);
+    mvprintw(LINES - 1, 75, "%2d", strength);
+    mvprintw(LINES - 1, 56, "%2d", player.hits);
 
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
@@ -1122,6 +1141,12 @@ void print_full_map(int floor_num){
     attron(COLOR_PAIR(5));
     mvprintw(player.y, player.x, "\U0001FBC5");
     attroff(COLOR_PAIR(5));
+
+    char string[6] = "DFGSU";
+    for(int i = 0; i < 5; i++){
+        mvprintw(enemies[i].y, enemies[i].x, "%c", string[i]);
+    }
+
     mvprintw(staircases[floor_num].y, staircases[floor_num].x, "<");
 
     for(int y = 0; y < LINES; y++){
@@ -1142,7 +1167,7 @@ void print_full_map(int floor_num){
                 if(map[y][x].ch == 'x'){
                     attron(COLOR_PAIR(15));
                 }
-                if(map[y][x].ch == 'M' || map[y][x].ch == 'd' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
+                if(map[y][x].ch == 'm' || map[y][x].ch == 'd' || map[y][x].ch == 'w' || map[y][x].ch == 'a' || map[y][x].ch == 's'){
                     attron(COLOR_PAIR(16));
                 }
                 if(map[y][x].ch == 'f' && !map[y][x].color_check){
@@ -1319,21 +1344,22 @@ void print_full_map(int floor_num){
         attroff(COLOR_PAIR(1));
         attroff(COLOR_PAIR(10));
     }
+
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits: 0");
-    mvprintw(LINES - 1, 70, "Str:");
+    mvprintw(LINES - 1, 50, "Hits:   /15");
+    mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
     mvprintw(LINES - 1, 130, "Ancient Keys:");
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
 
-    mvprintw(LINES - 1, 37, "%d", gold);
+    mvprintw(LINES - 1, 38, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
-    mvprintw(LINES - 1, 75, "%d", strength);
     mvprintw(LINES - 1, 96, "%d", gold);
-    mvprintw(LINES - 1, 75, "%d", strength);
+    mvprintw(LINES - 1, 75, "%2d", strength);
+    mvprintw(LINES - 1, 56, "%2d", player.hits);
     mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
 }
 
@@ -1342,19 +1368,21 @@ void print_map_with_colors(int floor_num){
         print_full_map(floor_num);
         return;
     }
+    
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits: 0");
-    mvprintw(LINES - 1, 70, "Str:");
+    mvprintw(LINES - 1, 50, "Hits:   /15");
+    mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
     mvprintw(LINES - 1, 130, "Ancient Keys:");
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
     
-    mvprintw(LINES - 1, 37, "%d", gold);
+    mvprintw(LINES - 1, 38, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
-    mvprintw(LINES - 1, 75, "%d", strength);
+    mvprintw(LINES - 1, 75, "%2d", strength);
+    mvprintw(LINES - 1, 56, "%2d", player.hits);
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
             if(map[y][x].color_pair != 0){
@@ -1386,7 +1414,7 @@ void print_map_with_colors(int floor_num){
                     if(map[y][x].ch == 'x'){
                         attron(COLOR_PAIR(15));
                     }
-                    if(map[y][x].ch == 'M' || map[y][x].ch == 'd' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
+                    if(map[y][x].ch == 'm' || map[y][x].ch == 'd' || map[y][x].ch == 'w' || map[y][x].ch == 'a' || map[y][x].ch == 's'){
                         attron(COLOR_PAIR(16));
                     }
                     if(map[y][x].ch == 'f' && map[y][x].color_pair == 20 && !map[y][x].color_check){
@@ -1544,21 +1572,23 @@ void print_map_with_colors(int floor_num){
         attroff(COLOR_PAIR(7));
         attroff(COLOR_PAIR(20));
     }
+    
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits: 0");
-    mvprintw(LINES - 1, 70, "Str:");
+    mvprintw(LINES - 1, 50, "Hits:   /15");
+    mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
     mvprintw(LINES - 1, 130, "Ancient Keys:");
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
 
-    mvprintw(LINES - 1, 37, "%d", gold);
+    mvprintw(LINES - 1, 38, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
-    mvprintw(LINES - 1, 75, "%d", strength);
+    mvprintw(LINES - 1, 75, "%2d", strength);
     mvprintw(LINES - 1, 96, "%d", gold);
-    mvprintw(LINES - 1, 75, "%d", strength);
+    mvprintw(LINES - 1, 75, "%2d", strength);
+    mvprintw(LINES - 1, 56, "%2d", player.hits);
     mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
 }
 
@@ -1723,6 +1753,8 @@ int treasure_room(){
     mvprintw(player.y, player.x, "\U0001FBC5");
     attroff(COLOR_PAIR(5));
 
+    print_enemies();
+
     int gold_count = rand_with_range(80, 100);
     int i = 0;
     int x, y;
@@ -1765,8 +1797,8 @@ int treasure_room(){
     int floor_num = 4;
     while(1){
         mvprintw(LINES - 1, 30, "Score:");
-        mvprintw(LINES - 1, 50, "Hits: 0");
-        mvprintw(LINES - 1, 70, "Str:");
+        mvprintw(LINES - 1, 50, "Hits:   /15");
+        mvprintw(LINES - 1, 70, "Str:   /20");
         mvprintw(LINES - 1, 90, "Gold:");
         mvprintw(LINES - 1, 110, "Exp:");
         mvprintw(LINES - 1, 130, "Ancient Keys:");
@@ -1774,23 +1806,30 @@ int treasure_room(){
         mvprintw(0, COLS - 31, "You are in the Treasure Room.");
         mvprintw(1, COLS - 30, "Press q to Finish the Game.");
         
-        mvprintw(LINES - 1, 37, "%d", gold);
+        mvprintw(LINES - 1, 38, "%d", gold);
         mvprintw(LINES - 1, 96, "%d", gold);
         mvprintw(LINES - 1, 75, "  ");
-        mvprintw(LINES - 1, 75, "%d", strength);
+        mvprintw(LINES - 1, 75, "%2d", strength);
+        mvprintw(LINES - 1, 56, "%2d", player.hits);
 
         attron(COLOR_PAIR(5));
         mvprintw(player.y, player.x, "\U0001FBC5");
         attroff(COLOR_PAIR(5));
+
+        print_enemies();
+
         refresh();
 
         mvprintw(LINES - 1, 96, "%d", gold);
-        mvprintw(LINES - 1, 75, "%d", strength);
+        mvprintw(LINES - 1, 75, "%2d", strength);
+        mvprintw(LINES - 1, 56, "%2d", player.hits);
         mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
 
         attron(COLOR_PAIR(5));
         mvprintw(player.y, player.x, "\U0001FBC5");
         attroff(COLOR_PAIR(5));
+
+        print_enemies();
 
         refresh();
         
@@ -1808,7 +1847,7 @@ int treasure_room(){
             c = getch();
         }
         
-        if(c == 's' || c == 'S'){
+        if(c == 's' || c == 's'){
             for(int delta_x = -1; delta_x <= 1; delta_x++){
                 for(int delta_y = -1; delta_y <= 1; delta_y++){
                     if(delta_x == 0 && delta_y == 0){
@@ -1933,6 +1972,8 @@ int treasure_room(){
         mvprintw(player.y, player.x, "\U0001FBC5");
         attroff(COLOR_PAIR(5));
 
+        print_enemies();
+
         if(player.under.ch == '*' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
@@ -1953,6 +1994,8 @@ int treasure_room(){
         attron(COLOR_PAIR(5));
         mvprintw(player.y, player.x, "\U0001FBC5");
         attroff(COLOR_PAIR(5));
+
+        print_enemies();
         
         int trap_num = check_trap(player.x, player.y, traps, trap_count, &strength);
         if(trap_num != -1){
@@ -2141,6 +2184,19 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     }
     rooms[find_room(staircases[floor_num].x, staircases[floor_num].y)].theme = 1;
 
+    int enemy_hits[6] = {5, 10, 15, 20, 30};
+    for(int i = 0; i < 5; i++){ 
+        do{
+            enemies[i].x = random_with_range(0, COLS - 1);
+            enemies[i].y = random_with_range(0, LINES - 1);
+            chtype ch = mvinch(enemies[i].y, enemies[i].x);
+            character = ch & A_CHARTEXT;
+        } while(character != '.');
+        enemies[i].hits = enemy_hits[i];
+    }
+
+    print_enemies();
+
     print_rooms();
 
     attron(COLOR_PAIR(20));
@@ -2272,18 +2328,19 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         }
         
         mvprintw(LINES - 1, 30, "Score:");
-        mvprintw(LINES - 1, 50, "Hits: 0");
-        mvprintw(LINES - 1, 70, "Str:");
+        mvprintw(LINES - 1, 50, "Hits:   /15");
+        mvprintw(LINES - 1, 70, "Str:   /20");
         mvprintw(LINES - 1, 90, "Gold:");
         mvprintw(LINES - 1, 110, "Exp:");
         mvprintw(LINES - 1, 130, "Ancient Keys:");
 
         mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
         
-        mvprintw(LINES - 1, 37, "%d", gold);
+        mvprintw(LINES - 1, 38, "%d", gold);
         mvprintw(LINES - 1, 96, "%d", gold);
         mvprintw(LINES - 1, 75, "  ");
-        mvprintw(LINES - 1, 75, "%d", strength);
+        mvprintw(LINES - 1, 75, "%2d", strength);
+        mvprintw(LINES - 1, 56, "%2d", player.hits);
 
         attron(COLOR_PAIR(5));
         mvprintw(player.y, player.x, "\U0001FBC5");
@@ -2291,7 +2348,8 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         refresh();
 
         mvprintw(LINES - 1, 96, "%d", gold);
-        mvprintw(LINES - 1, 75, "%d", strength);
+        mvprintw(LINES - 1, 75, "%2d", strength);
+        mvprintw(LINES - 1, 56, "%2d", player.hits);
         mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
 
         attron(COLOR_PAIR(5));
@@ -2314,12 +2372,12 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             c = getch();
         }
         
-        if(c == 'm' || c == 'M'){
+        if(c == 'm' || c == 'm'){
             m_check = m_check ^ 1;
             print_map_with_colors(floor_num);
         }
 
-        if(c == 's' || c == 'S'){
+        if(c == 's' || c == 's'){
             for(int delta_x = -1; delta_x <= 1; delta_x++){
                 for(int delta_y = -1; delta_y <= 1; delta_y++){
                     if(delta_x == 0 && delta_y == 0){
@@ -2587,7 +2645,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             getch();
             mvprintw(0, 0, "               ");
         }
-        if(player.under.ch == 'M' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
+        if(player.under.ch == 'm' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[0]++;
@@ -2605,7 +2663,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             getch();
             mvprintw(0, 0, "                   ");
         }
-        if(player.under.ch == 'W' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
+        if(player.under.ch == 'w' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[2]++;
@@ -2614,7 +2672,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             getch();
             mvprintw(0, 0, "                       ");
         }
-        if(player.under.ch == 'A' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
+        if(player.under.ch == 'a' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[3]++;
@@ -2623,7 +2681,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             getch();
             mvprintw(0, 0, "                         ");
         }
-        if(player.under.ch == 'S' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
+        if(player.under.ch == 's' && g_check == 0 && rooms[find_room(player.x, player.y)].theme != 3){
             player.under.ch = '.';
             map[player.y][player.x].ch = '.';
             backpack[4]++;
@@ -2718,7 +2776,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         else if(player.under.ch == '#' && prev_room != -1 && rooms[prev_room].theme != 1 && strcmp(track_name, "off") != 0){
             play_music(track_name);
         }
-        if((difftime(time(NULL), enchant_time) >= 5) && (rooms[current_room].theme == 2)){
+        if((difftime(time(NULL), enchant_time) >= 1) && (rooms[current_room].theme == 2)){
             strength--;
             enchant_time = time(NULL);
         }
@@ -2737,7 +2795,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                         if(map[y][x].ch == 'x'){
                             attron(COLOR_PAIR(15));
                         }
-                        if(map[y][x].ch == 'M' || map[y][x].ch == 'd' || map[y][x].ch == 'W' || map[y][x].ch == 'A' || map[y][x].ch == 'S'){
+                        if(map[y][x].ch == 'm' || map[y][x].ch == 'd' || map[y][x].ch == 'w' || map[y][x].ch == 'a' || map[y][x].ch == 's'){
                             attron(COLOR_PAIR(16));
                         }
                         if(map[y][x].ch == 'f'){
@@ -2917,11 +2975,12 @@ void save_game(char* filename, int floor_num){
 
     int previous_score, previous_gold, games_played;
     long int first_time;
-    sscanf(part1, "Time: %ld\nScore: %d\nGold: %d\nGames Played: %d\n", &first_time, &previous_score, &previous_gold, &games_played);
+    int hits;
+    sscanf(part1, "Time: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\n", &first_time, &previous_score, &previous_gold, &hits, &games_played);
     games_played += 1;
 
     char new_text[10000];
-    snprintf(new_text, sizeof(new_text), "Time: %ld\nScore: %d\nGold: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
+    snprintf(new_text, sizeof(new_text), "Time: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, player.hits, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
 
     char temp_string2[50];
     sprintf(temp_string2, "Room Count%d: ", floor_num);
@@ -3004,6 +3063,9 @@ void play(char *username, char color, char difficulty, int song){
             continue;
         }
         if(sscanf(line, "Strength: %d", &strength) == 1){
+            continue;
+        }
+        if(sscanf(line, "Hits: %d", &player.hits) == 1){
             continue;
         }
         if(sscanf(line, "Hunger: %d", &hunger) == 1){
