@@ -826,7 +826,7 @@ void food_list(int *strength){
     int highlight = 0;
     int check = 0;
 
-    char *options[2] ={"Eat 1 Normal Food", "Back"};
+    char *options[2] ={"Eat 1 Normal Food", "Eat 1 Deluxe Food", "Eat 1 Magical Food", "Back"};
     while(!check){
         clear();
         attroff(A_REVERSE);
@@ -840,9 +840,7 @@ void food_list(int *strength){
         mvprintw(LINES / 2 - 2, (COLS - 16) / 2, "Deluxe Food: %d", food[1]);
         attron(COLOR_PAIR(13));
         mvprintw(LINES / 2, (COLS - 16) / 2, "Magical Food: %d", food[2]);
-        attron(COLOR_PAIR(10));
-        mvprintw(LINES / 2 + 2, (COLS - 16) / 2, "Rotten Food: %d", food[3]);
-        attroff(COLOR_PAIR(10));
+    
 
         mvprintw(LINES / 2 + 4, (COLS - 30) / 2, "Hunger ");
         if(hunger < 20){
