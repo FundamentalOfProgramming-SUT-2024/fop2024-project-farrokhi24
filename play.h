@@ -85,10 +85,14 @@ int find_door_to_button(int x_button, int y_button){
 }
 
 void print_enemies(){
+    attron(COLOR_PAIR(21));
     char string[6] = "DFGSU";
     for(int i = 0; i < 5; i++){
         if(rooms[find_room(enemies[i].x, enemies[i].y)].explored == 0){
             attron(COLOR_PAIR(20));
+        }
+        if(map[enemies[i].y][enemies[i].x].ch == '#'){
+            attroff(COLOR_PAIR(20));
         }
         mvprintw(enemies[i].y, enemies[i].x, "%c", string[i]);
         attroff(COLOR_PAIR(20));
@@ -375,7 +379,7 @@ void ask_password(int password, int x, int y, int floor_num){
     }
 }
 
-int check_movement(int floor_num, int x, int y){
+int check_movement(int type, int floor_num, int x, int y){
     chtype ch = mvinch(y, x);
     char character = ch & A_CHARTEXT;
 
@@ -414,7 +418,7 @@ int check_movement(int floor_num, int x, int y){
         return 1;
     }
 
-    if(character == '@'){
+    if(character == '@' && type == 0){
         attron(COLOR_PAIR(5));
         int password_door_num = find_password_door(x, y);
         ask_password(password_doors[password_door_num].password, x, y, floor_num);
@@ -1590,6 +1594,7 @@ void print_map_with_colors(int floor_num){
     mvprintw(LINES - 1, 75, "%2d", strength);
     mvprintw(LINES - 1, 56, "%2d", player.hits);
     mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
+    print_enemies();
 }
 
 void initialize_map(){
@@ -1863,89 +1868,89 @@ int treasure_room(){
         attron(COLOR_PAIR(9));
         mvprintw(player.y, player.x, "%c", player.under.ch);
 
-        if((c == 'h' || c == 'H') && check_movement(floor_num, player.x - 1, player.y)){
+        if((c == 'h' || c == 'H') && check_movement(0, floor_num, player.x - 1, player.y)){
             if(f_check == 0){
                 player.x--;
             }
             else{
-                while(check_movement(floor_num, player.x - 1, player.y)){
+                while(check_movement(0, floor_num, player.x - 1, player.y)){
                     player.x--;
                 }
             }
         }
-        else if((c == 'j' || c == 'J') && check_movement(floor_num, player.x, player.y + 1)){
+        else if((c == 'j' || c == 'J') && check_movement(0, floor_num, player.x, player.y + 1)){
             if(f_check == 0){
                 player.y++;
             }
             else{
-                while(check_movement(floor_num, player.x, player.y + 1)){
+                while(check_movement(0, floor_num, player.x, player.y + 1)){
                     player.y++;
                 }
             }
         }
-        else if((c == 'k' || c == 'K') && check_movement(floor_num, player.x, player.y - 1)){
+        else if((c == 'k' || c == 'K') && check_movement(0, floor_num, player.x, player.y - 1)){
             if(f_check == 0){
                 player.y--;
             }
             else{
-                while(check_movement(floor_num, player.x, player.y - 1)){
+                while(check_movement(0, floor_num, player.x, player.y - 1)){
                     player.y--;
                 }
             }
         }
-        else if((c == 'l' || c == 'L') && check_movement(floor_num, player.x + 1, player.y)){
+        else if((c == 'l' || c == 'L') && check_movement(0, floor_num, player.x + 1, player.y)){
             if(f_check == 0){
                 player.x++;
             }
             else{
-                while(check_movement(floor_num, player.x + 1, player.y)){
+                while(check_movement(0, floor_num, player.x + 1, player.y)){
                     player.x++;
                 }
             }
         }
-        else if((c == 'y' || c == 'Y') && check_movement(floor_num, player.x - 1, player.y - 1)){
+        else if((c == 'y' || c == 'Y') && check_movement(0, floor_num, player.x - 1, player.y - 1)){
             if(f_check == 0){
                 player.x--;
                 player.y--;
             }
             else{
-                while(check_movement(floor_num, player.x - 1, player.y - 1)){
+                while(check_movement(0, floor_num, player.x - 1, player.y - 1)){
                     player.x--;
                     player.y--;
                 }
             }
         }
-        else if((c == 'u' || c == 'U') && check_movement(floor_num, player.x + 1, player.y - 1)){
+        else if((c == 'u' || c == 'U') && check_movement(0, floor_num, player.x + 1, player.y - 1)){
             if(f_check == 0){
                 player.x++;
                 player.y--;
             }
             else{
-                while(check_movement(floor_num, player.x + 1, player.y - 1)){
+                while(check_movement(0, floor_num, player.x + 1, player.y - 1)){
                     player.x++;
                     player.y--;
                 }
             }
         }
-        else if((c == 'b' || c == 'B') && check_movement(floor_num, player.x - 1, player.y + 1)){
+        else if((c == 'b' || c == 'B') && check_movement(0, floor_num, player.x - 1, player.y + 1)){
             if(f_check == 0){
                 player.x--;
                 player.y++;
             }
             else{
-                while(check_movement(floor_num, player.x - 1, player.y + 1)){
+                while(check_movement(0, floor_num, player.x - 1, player.y + 1)){
                     player.x--;
                     player.y++;
                 }
             }
         }
-        else if((c == 'n' || c == 'N') && check_movement(floor_num, player.x + 1, player.y + 1)){
+        else if((c == 'n' || c == 'N') && check_movement(0, floor_num, player.x + 1, player.y + 1)){
             if(f_check == 0){
                 player.x++;
                 player.y++;
             }
             else{
-                while(check_movement(floor_num, player.x + 1, player.y + 1)){
+                while(check_movement(0, floor_num, player.x + 1, player.y + 1)){
                     player.x++;
                     player.y++;
                 }
@@ -2007,6 +2012,28 @@ int treasure_room(){
             attroff(COLOR_PAIR(9));
             return -6;
         }
+    }
+}
+
+void enemy_follow(int floor_num, int i) {
+    if ((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)) {
+        return;
+    }
+    if ((enemies[i].x < player.x) && (check_movement(1, floor_num, enemies[i].x + 1, enemies[i].y) == 1) && (enemies[i].x + 1 != player.x)) {
+        enemies[i].x++;
+        return;
+    }
+    if ((enemies[i].x > player.x) && (check_movement(1, floor_num, enemies[i].x - 1, enemies[i].y) == 1) && (enemies[i].x - 1 != player.x)) {
+        enemies[i].x--;
+        return;
+    }
+    if ((enemies[i].y < player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y + 1) == 1) && (enemies[i].y + 1 != player.x)) {
+        enemies[i].y++;
+        return;
+    }
+    if ((enemies[i].y > player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y - 1) == 1) && (enemies[i].y - 1 != player.x)) {
+        enemies[i].y--;
+        return;
     }
 }
 
@@ -2193,7 +2220,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             character = ch & A_CHARTEXT;
         } while(character != '.');
         enemies[i].hits = enemy_hits[i];
+        enemies[i].under.ch = '.';
+        enemies[i].under.color_pair = 21;
     }
+    int snake_check = 0;
 
     print_enemies();
 
@@ -2220,6 +2250,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
             map[y][x].ch = (mvinch(y, x) & A_CHARTEXT);
+            if((map[y][x].ch == 'D') || (map[y][x].ch == 'F') || (map[y][x].ch == 'G') || (map[y][x].ch == 'S') || (map[y][x].ch == 'U')){
+                map[y][x].ch = '.';
+            }
             map[y][x].color_pair = PAIR_NUMBER(mvinch(y, x) & A_COLOR);
             if(map[y][x].ch == '!'){
                 map[y][x].ch = '#';
@@ -2396,12 +2429,12 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
 
         int previous_x = player.x, previous_y = player.y;
 
-        if((c == 'h' || c == 'H') && check_movement(floor_num, player.x - 1, player.y)){
+        if((c == 'h' || c == 'H') && check_movement(0, floor_num, player.x - 1, player.y)){
             if(f_check == 0){
                 player.x--;
             }
             else{
-                while(check_movement(floor_num, player.x - 1, player.y)){
+                while(check_movement(0, floor_num, player.x - 1, player.y)){
                     player.x--;
                     if(find_room(y, x) != -1){
                         if(rooms[find_room(y, x)].theme != 3){
@@ -2416,12 +2449,12 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
         }
-        else if((c == 'j' || c == 'J') && check_movement(floor_num, player.x, player.y + 1)){
+        else if((c == 'j' || c == 'J') && check_movement(0, floor_num, player.x, player.y + 1)){
             if(f_check == 0){
                 player.y++;
             }
             else{
-                while(check_movement(floor_num, player.x, player.y + 1)){
+                while(check_movement(0, floor_num, player.x, player.y + 1)){
                     player.y++;
                     if(find_room(y, x) != -1){
                         if(rooms[find_room(y, x)].theme != 3){
@@ -2436,12 +2469,12 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
         }
-        else if((c == 'k' || c == 'K') && check_movement(floor_num, player.x, player.y - 1)){
+        else if((c == 'k' || c == 'K') && check_movement(0, floor_num, player.x, player.y - 1)){
             if(f_check == 0){
                 player.y--;
             }
             else{
-                while(check_movement(floor_num, player.x, player.y - 1)){
+                while(check_movement(0, floor_num, player.x, player.y - 1)){
                     player.y--;
                     if(find_room(y, x) != -1){
                         if(rooms[find_room(y, x)].theme != 3){
@@ -2456,12 +2489,12 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
         }
-        else if((c == 'l' || c == 'L') && check_movement(floor_num, player.x + 1, player.y)){
+        else if((c == 'l' || c == 'L') && check_movement(0, floor_num, player.x + 1, player.y)){
             if(f_check == 0){
                 player.x++;
             }
             else{
-                while(check_movement(floor_num, player.x + 1, player.y)){
+                while(check_movement(0, floor_num, player.x + 1, player.y)){
                     player.x++;
                     if(find_room(y, x) != -1){
                         if(rooms[find_room(y, x)].theme != 3){
@@ -2476,13 +2509,13 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
         }
-        else if((c == 'y' || c == 'Y') && check_movement(floor_num, player.x - 1, player.y - 1)){
+        else if((c == 'y' || c == 'Y') && check_movement(0, floor_num, player.x - 1, player.y - 1)){
             if(f_check == 0){
                 player.x--;
                 player.y--;
             }
             else{
-                while(check_movement(floor_num, player.x - 1, player.y - 1)){
+                while(check_movement(0, floor_num, player.x - 1, player.y - 1)){
                     player.x--;
                     player.y--;
                     if(find_room(y, x) != -1){
@@ -2498,13 +2531,13 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
         }
-        else if((c == 'u' || c == 'U') && check_movement(floor_num, player.x + 1, player.y - 1)){
+        else if((c == 'u' || c == 'U') && check_movement(0, floor_num, player.x + 1, player.y - 1)){
             if(f_check == 0){
                 player.x++;
                 player.y--;
             }
             else{
-                while(check_movement(floor_num, player.x + 1, player.y - 1)){
+                while(check_movement(0, floor_num, player.x + 1, player.y - 1)){
                     player.x++;
                     player.y--;
                     if(find_room(y, x) != -1){
@@ -2520,13 +2553,13 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
         }
-        else if((c == 'b' || c == 'B') && check_movement(floor_num, player.x - 1, player.y + 1)){
+        else if((c == 'b' || c == 'B') && check_movement(0, floor_num, player.x - 1, player.y + 1)){
             if(f_check == 0){
                 player.x--;
                 player.y++;
             }
             else{
-                while(check_movement(floor_num, player.x - 1, player.y + 1)){
+                while(check_movement(0, floor_num, player.x - 1, player.y + 1)){
                     player.x--;
                     player.y++;
                     if(find_room(y, x) != -1){
@@ -2542,13 +2575,13 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
         }
-        else if((c == 'n' || c == 'N') && check_movement(floor_num, player.x + 1, player.y + 1)){
+        else if((c == 'n' || c == 'N') && check_movement(0, floor_num, player.x + 1, player.y + 1)){
             if(f_check == 0){
                 player.x++;
                 player.y++;
             }
             else{
-                while(check_movement(floor_num, player.x + 1, player.y + 1)){
+                while(check_movement(0, floor_num, player.x + 1, player.y + 1)){
                     player.x++;
                     player.y++;
                     if(find_room(y, x) != -1){
@@ -2587,7 +2620,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             for(int x = 0; x < COLS; x++){
                 if(map[y][x].ch == '=' && find_room(x, y) == find_room(player.x, player.y)){
                     reveal_room_by_window(x, y);
-                    
                 }
             }
         }
@@ -2842,6 +2874,21 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         }
         if(strength == 0){
             return -6;
+        }
+
+        if(find_room(enemies[3].x, enemies[3].y) == current_room){
+            snake_check = 1;
+        }
+
+        for(int i = 0; i < 5; i++){
+            if((find_room(enemies[i].x, enemies[i].y) == current_room) || (i == 3 && snake_check == 1)){
+                enemy_follow(floor_num, i);
+                enemies[i].under.ch = mvinch(enemies[i].y, enemies[i].x) & A_CHARTEXT;
+                enemies[i].under.color_pair = PAIR_NUMBER(mvinch(enemies[i].y, enemies[i].x) & A_COLOR);
+                attron(COLOR_PAIR(enemies[i].under.color_pair));
+                mvprintw(enemies[i].y, enemies[i].x, "%c", enemies[i].under.ch);
+                attroff(COLOR_PAIR(enemies[i].under.color_pair));
+            }
         }
     }
 
