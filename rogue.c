@@ -42,6 +42,7 @@ int main(){
     init_pair(2, COLOR_WHITE, COLOR_DARK_GOLD);
     init_pair(3, COLOR_WHITE, COLOR_DARK_SILVER);
     init_pair(4, COLOR_WHITE, COLOR_BRONZE);
+    //init_pair(5, COLOR_WHITE, COLOR_BLACK);
     init_pair(7, COLOR_GOLD, COLOR_BLACK);
     init_pair(8, COLOR_RED, COLOR_BLACK);
     init_pair(9, COLOR_CYAN, COLOR_BLACK);
