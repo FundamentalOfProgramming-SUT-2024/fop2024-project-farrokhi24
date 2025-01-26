@@ -37,6 +37,8 @@ int ancient_key_count = 0;
 struct point ancient_key;
 long int start_time, enchant_time;
 int m_check = 0;
+int speed = 1;
+int snake_check = 0;
 
 struct player{
     int x;
@@ -826,23 +828,23 @@ void food_list(int *strength){
     int highlight = 0;
     int check = 0;
 
-    char *options[2] ={"Eat 1 Normal Food", "Eat 1 Deluxe Food", "Eat 1 Magical Food", "Back"};
+    char *options[4] ={"Eat 1 Normal Food", "Eat 1 Deluxe Food", "Eat 1 Magical Food", "Back"};
     while(!check){
         clear();
         attroff(A_REVERSE);
         attron(A_BOLD);
-        mvprintw(LINES / 2 - 6, (COLS - 11) / 2, "Food List: ");
+        mvprintw(LINES / 2 - 8, (COLS - 11) / 2, "Food List: ");
         attroff(A_BOLD);
 
         attron(COLOR_PAIR(14));
-        mvprintw(LINES / 2 - 4, (COLS - 16) / 2, "Normal Food: %d", food[0]);
+        mvprintw(LINES / 2 - 6, (COLS - 16) / 2, "Normal Food: %d", food[0]);
         attron(COLOR_PAIR(7));
-        mvprintw(LINES / 2 - 2, (COLS - 16) / 2, "Deluxe Food: %d", food[1]);
+        mvprintw(LINES / 2 - 4, (COLS - 16) / 2, "Deluxe Food: %d", food[1]);
         attron(COLOR_PAIR(13));
-        mvprintw(LINES / 2, (COLS - 16) / 2, "Magical Food: %d", food[2]);
-    
+        mvprintw(LINES / 2 - 2, (COLS - 16) / 2, "Magical Food: %d", food[2]);
+        attroff(COLOR_PAIR(13));
 
-        mvprintw(LINES / 2 + 4, (COLS - 30) / 2, "Hunger ");
+        mvprintw(LINES / 2, (COLS - 30) / 2, "Hunger ");
         if(hunger < 20){
             attron(COLOR_PAIR(1));
             for(int i = 0; i < hunger; i++){
@@ -861,22 +863,32 @@ void food_list(int *strength){
             attroff(COLOR_PAIR(1));
         }
 
-        for(int i = 0; i < 2; i++){
+        for(int i = 0; i < 4; i++){
             if(highlight == i){
                 attron(A_REVERSE);
             }
             else{
                 attroff(A_REVERSE);
             }
-            mvprintw(LINES / 2 + 6 + 2 * i, (COLS - strlen(options[i])) / 2, "%s", options[i]);
+            mvprintw(LINES / 2 + 2 + 2 * i, (COLS - strlen(options[i])) / 2, "%s", options[i]);
         }
 
         int c = getch();
-        if(c == KEY_DOWN && highlight == 0){
-            highlight++;
+        if(c == KEY_DOWN){
+            if(highlight == 3){
+                highlight = 0;
+            }
+            else{
+                highlight++;
+            }
         }
-        if(c == KEY_UP && highlight == 1){
-            highlight--;
+        if(c == KEY_UP){
+            if(highlight == 0){
+                highlight = 3;
+            }
+            else{
+                highlight--;
+            }
         }
         if(c == 10){
             if(highlight == 0){
@@ -894,12 +906,38 @@ void food_list(int *strength){
                 }
                 else{
                     attron(COLOR_PAIR(1));
-                    mvprintw(0, 0, "You Are Out of Food. Press Any Key to Continue...");
+                    mvprintw(0, 0, "You Are Out of Noraml Food. Press Any Key to Continue...");
                     attroff(COLOR_PAIR(1));
                     getch();
                 }
             }
             else if(highlight == 1){
+                if(food[1] > 0){
+                    food[1]--;
+                    (*strength)++;
+                    //Add Power
+                }
+                else{
+                    attron(COLOR_PAIR(1));
+                    mvprintw(0, 0, "You Are Out of Deluxe Food. Press Any Key to Continue...");
+                    attroff(COLOR_PAIR(1));
+                    getch();
+                }
+            }
+            else if(highlight == 2){
+                if(food[2] > 0){
+                    food[2]--;
+                    (*strength)++;
+                    speed = 2;
+                }
+                else{
+                    attron(COLOR_PAIR(1));
+                    mvprintw(0, 0, "You Are Out of Magical Food. Press Any Key to Continue...");
+                    attroff(COLOR_PAIR(1));
+                    getch();
+                }
+            }
+            else if(highlight == 3){
                 attroff(A_REVERSE);
                 refresh();
                 clear();
@@ -1717,6 +1755,28 @@ int game_pause(){
     }
 }
 
+void enemy_follow(int floor_num, int i) {
+    if ((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)) {
+        return;
+    }
+    if ((enemies[i].x < player.x) && (check_movement(1, floor_num, enemies[i].x + 1, enemies[i].y) == 1) && (enemies[i].x + 1 != player.x)) {
+        enemies[i].x++;
+        return;
+    }
+    if ((enemies[i].x > player.x) && (check_movement(1, floor_num, enemies[i].x - 1, enemies[i].y) == 1) && (enemies[i].x - 1 != player.x)) {
+        enemies[i].x--;
+        return;
+    }
+    if ((enemies[i].y < player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y + 1) == 1) && (enemies[i].y + 1 != player.x)) {
+        enemies[i].y++;
+        return;
+    }
+    if ((enemies[i].y > player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y - 1) == 1) && (enemies[i].y - 1 != player.x)) {
+        enemies[i].y--;
+        return;
+    }
+}
+
 int treasure_room(){
     clear();
     play_music("treasure.mp3");
@@ -1868,7 +1928,10 @@ int treasure_room(){
 
         if((c == 'h' || c == 'H') && check_movement(0, floor_num, player.x - 1, player.y)){
             if(f_check == 0){
-                player.x--;
+                player.x -= 2;
+                if((speed == 2) && check_movement(0, floor_num, player.x - 1, player.y)){
+                    player.x--;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x - 1, player.y)){
@@ -1879,6 +1942,9 @@ int treasure_room(){
         else if((c == 'j' || c == 'J') && check_movement(0, floor_num, player.x, player.y + 1)){
             if(f_check == 0){
                 player.y++;
+                if((speed == 2) && check_movement(0, floor_num, player.x, player.y + 1)){
+                    player.y++;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x, player.y + 1)){
@@ -1889,6 +1955,9 @@ int treasure_room(){
         else if((c == 'k' || c == 'K') && check_movement(0, floor_num, player.x, player.y - 1)){
             if(f_check == 0){
                 player.y--;
+                if((speed == 2) && check_movement(0, floor_num, player.x, player.y - 1)){
+                    player.y--;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x, player.y - 1)){
@@ -1899,6 +1968,9 @@ int treasure_room(){
         else if((c == 'l' || c == 'L') && check_movement(0, floor_num, player.x + 1, player.y)){
             if(f_check == 0){
                 player.x++;
+                if((speed == 2) && check_movement(0, floor_num, player.x + 1, player.y)){
+                    player.x++;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x + 1, player.y)){
@@ -1910,6 +1982,10 @@ int treasure_room(){
             if(f_check == 0){
                 player.x--;
                 player.y--;
+                if((speed == 2) && check_movement(0, floor_num, player.x - 1, player.y - 1)){
+                    player.x--;
+                    player.y--;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x - 1, player.y - 1)){
@@ -1922,6 +1998,10 @@ int treasure_room(){
             if(f_check == 0){
                 player.x++;
                 player.y--;
+                if((speed == 2) && check_movement(0, floor_num, player.x + 1, player.y - 1)){
+                    player.x++;
+                    player.y--;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x + 1, player.y - 1)){
@@ -1934,6 +2014,10 @@ int treasure_room(){
             if(f_check == 0){
                 player.x--;
                 player.y++;
+                if((speed == 2) && check_movement(0, floor_num, player.x - 1, player.y + 1)){
+                    player.x--;
+                    player.y++;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x - 1, player.y + 1)){
@@ -1946,6 +2030,10 @@ int treasure_room(){
             if(f_check == 0){
                 player.x++;
                 player.y++;
+                if((speed == 2) && check_movement(0, floor_num, player.x + 1, player.y + 1)){
+                    player.x++;
+                    player.y++;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x + 1, player.y + 1)){
@@ -1967,7 +2055,16 @@ int treasure_room(){
             attroff(COLOR_PAIR(9));
             return -4;
         }
-
+        for(int i = 0; i < 5; i++){
+            if((find_room(enemies[i].x, enemies[i].y) == current_room) || (i == 3 && snake_check == 1)){
+                enemy_follow(floor_num, i);
+                enemies[i].under.ch = mvinch(enemies[i].y, enemies[i].x) & A_CHARTEXT;
+                enemies[i].under.color_pair = PAIR_NUMBER(mvinch(enemies[i].y, enemies[i].x) & A_COLOR);
+                attron(COLOR_PAIR(enemies[i].under.color_pair));
+                mvprintw(enemies[i].y, enemies[i].x, "%c", enemies[i].under.ch);
+                attroff(COLOR_PAIR(enemies[i].under.color_pair));
+            }
+        }
         player.under.ch = mvinch(player.y, player.x) & A_CHARTEXT;
         player.under.color_pair = PAIR_NUMBER(mvinch(player.y, player.x) & A_COLOR); 
 
@@ -2010,28 +2107,6 @@ int treasure_room(){
             attroff(COLOR_PAIR(9));
             return -6;
         }
-    }
-}
-
-void enemy_follow(int floor_num, int i) {
-    if ((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)) {
-        return;
-    }
-    if ((enemies[i].x < player.x) && (check_movement(1, floor_num, enemies[i].x + 1, enemies[i].y) == 1) && (enemies[i].x + 1 != player.x)) {
-        enemies[i].x++;
-        return;
-    }
-    if ((enemies[i].x > player.x) && (check_movement(1, floor_num, enemies[i].x - 1, enemies[i].y) == 1) && (enemies[i].x - 1 != player.x)) {
-        enemies[i].x--;
-        return;
-    }
-    if ((enemies[i].y < player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y + 1) == 1) && (enemies[i].y + 1 != player.x)) {
-        enemies[i].y++;
-        return;
-    }
-    if ((enemies[i].y > player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y - 1) == 1) && (enemies[i].y - 1 != player.x)) {
-        enemies[i].y--;
-        return;
     }
 }
 
@@ -2221,7 +2296,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         enemies[i].under.ch = '.';
         enemies[i].under.color_pair = 21;
     }
-    int snake_check = 0;
 
     print_enemies();
 
@@ -2430,6 +2504,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         if((c == 'h' || c == 'H') && check_movement(0, floor_num, player.x - 1, player.y)){
             if(f_check == 0){
                 player.x--;
+                if((speed == 2) && check_movement(0, floor_num, player.x - 1, player.y)){
+                    player.x--;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x - 1, player.y)){
@@ -2450,6 +2527,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         else if((c == 'j' || c == 'J') && check_movement(0, floor_num, player.x, player.y + 1)){
             if(f_check == 0){
                 player.y++;
+                if((speed == 2) && check_movement(0, floor_num, player.x, player.y + 1)){
+                    player.y++;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x, player.y + 1)){
@@ -2470,6 +2550,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         else if((c == 'k' || c == 'K') && check_movement(0, floor_num, player.x, player.y - 1)){
             if(f_check == 0){
                 player.y--;
+                if((speed == 2) && check_movement(0, floor_num, player.x, player.y - 1)){
+                    player.y--;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x, player.y - 1)){
@@ -2490,6 +2573,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         else if((c == 'l' || c == 'L') && check_movement(0, floor_num, player.x + 1, player.y)){
             if(f_check == 0){
                 player.x++;
+                if((speed == 2) && check_movement(0, floor_num, player.x + 1, player.y)){
+                    player.x++;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x + 1, player.y)){
@@ -2511,6 +2597,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             if(f_check == 0){
                 player.x--;
                 player.y--;
+                if((speed == 2) && check_movement(0, floor_num, player.x - 1, player.y - 1)){
+                    player.x--;
+                    player.y--;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x - 1, player.y - 1)){
@@ -2533,6 +2623,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             if(f_check == 0){
                 player.x++;
                 player.y--;
+                if((speed == 2) && check_movement(0, floor_num, player.x + 1, player.y - 1)){
+                    player.x++;
+                    player.y--;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x + 1, player.y - 1)){
@@ -2555,6 +2649,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             if(f_check == 0){
                 player.x--;
                 player.y++;
+                if((speed == 2) && check_movement(0, floor_num, player.x - 1, player.y + 1)){
+                    player.x--;
+                    player.y++;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x - 1, player.y + 1)){
@@ -2577,6 +2675,10 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             if(f_check == 0){
                 player.x++;
                 player.y++;
+                if((speed == 2) && check_movement(0, floor_num, player.x + 1, player.y + 1)){
+                    player.x++;
+                    player.y++;
+                }
             }
             else{
                 while(check_movement(0, floor_num, player.x + 1, player.y + 1)){

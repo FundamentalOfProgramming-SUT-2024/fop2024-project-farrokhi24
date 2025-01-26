@@ -410,7 +410,7 @@ void generate_floor_map(char *username, char difficulty, int floor_num){
 
 void generate_map(char *username, char difficulty){
     srand(time(0));
-    for(int i = 1; i <= 20; i++){
+    for(int i = 1; i <= 4; i++){
         generate_floor_map(username, difficulty, i);
     }
 }
