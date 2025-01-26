@@ -38,7 +38,9 @@ struct point ancient_key;
 long int start_time, enchant_time;
 int m_check = 0;
 int speed = 1;
+long int speed_time;
 int snake_check = 0;
+long int normal_food_time = 0, magical_food_time = 0, deluxe_food_time = 0;
 
 struct player{
     int x;
@@ -219,7 +221,7 @@ void ask_password(int password, int x, int y, int floor_num){
                         break;
                     }
                     else{
-                        if(rand() % 2 == 0){
+                        if(rand() % 10 == 0){
                             wattron(win, COLOR_PAIR(1));
                             mvwprintw(win, 2, 6, "Ancient Key Broke.");
                             wattroff(win, COLOR_PAIR(1));
@@ -390,16 +392,28 @@ int check_movement(int type, int floor_num, int x, int y){
     }
 
     if(character == 'f' && (ch & A_COLOR) == COLOR_PAIR(14)){
-        food[0]++;
+        if(rand() % 4 == 0){
+            food[0]++;
+            if(normal_food_time == 0){
+                normal_food_time = time(NULL);
+            }
+        }
+        else{
+            food[0]++;
+            food[3]++;
+        }
     }
     if(character == 'f' && (ch & A_COLOR) == COLOR_PAIR(7)){
         food[1]++;
+        if(deluxe_food_time == 0){
+            deluxe_food_time = time(NULL);
+        }
     }
     if(character == 'f' && (ch & A_COLOR) == COLOR_PAIR(13)){
         food[2]++;
-    }
-    if(character == 'f' && (ch & A_COLOR) == COLOR_PAIR(10)){
-        food[3]++;
+        if(magical_food_time == 0){
+            magical_food_time = time(NULL);
+        }
     }
 
     if(character == '$' && (ch & A_COLOR) == COLOR_PAIR(10)){
@@ -576,7 +590,7 @@ void generate_food(){
         y = rand_with_range(1, LINES);
         if((mvinch(y, x) & A_CHARTEXT) == '.'){
             int random = rand() % 6;
-            if(random < 3){
+            if((random < 3) || (random == 5)){
                 attron(COLOR_PAIR(14));
                 map[y][x].color_pair = 14;
             }
@@ -587,10 +601,6 @@ void generate_food(){
             if(random == 4){
                 attron(COLOR_PAIR(13));
                 map[y][x].color_pair = 13;
-            }
-            if(random == 5){
-                attron(COLOR_PAIR(10));
-                map[y][x].color_pair = 10;
             }
             if(rooms[find_room(x, y)].explored == 0){
                 attron(COLOR_PAIR(20));
@@ -899,10 +909,27 @@ void food_list(int *strength){
                     getch();
                 }
                 else if(food[0] > 0){
-                    food[0]--;
-                    hunger--;
-                    (*strength)++;
-                    start_time = time(NULL);
+                    int random = rand() % food[0];
+                    mvprintw(0, 0, "normal = %d", food[0]);
+                    mvprintw(1, 0, "rotten = %d", food[3]);
+                    mvprintw(2, 0, "random = %d", random);
+                    getch();
+                    if(random > food[3]){
+                        food[0]--;
+                        hunger--;
+                        (*strength)++;
+                        start_time = time(NULL);
+                        normal_food_time = time(NULL);
+                    }
+                    else{
+                        food[3]--;
+                        food[0]--;
+                        strength--;
+                        attron(COLOR_PAIR(1));
+                        mvprintw(0, 0, "You Ate Rotten Food. Press Any Key to Continue...");
+                        attroff(COLOR_PAIR(1));
+                        getch();
+                    }
                 }
                 else{
                     attron(COLOR_PAIR(1));
@@ -929,6 +956,7 @@ void food_list(int *strength){
                     food[2]--;
                     (*strength)++;
                     speed = 2;
+                    speed_time = time(NULL);
                 }
                 else{
                     attron(COLOR_PAIR(1));
@@ -1212,7 +1240,7 @@ void print_full_map(int floor_num){
                 }
                 if(map[y][x].ch == 'f' && !map[y][x].color_check){
                     int random = rand() % 6;
-                    if(random < 3){
+                    if((random < 3) || (random == 5)){
                         map[y][x].color_pair = 14;
                     }
                     else if(random == 3){
@@ -1220,9 +1248,6 @@ void print_full_map(int floor_num){
                     }
                     else if(random == 4){
                         map[y][x].color_pair = 13;
-                    }
-                    else if(random == 5){
-                        map[y][x].color_pair = 10;
                     }
                     map[y][x].color_check = 1;
                     attron(COLOR_PAIR(map[y][x].color_pair));
@@ -1459,7 +1484,7 @@ void print_map_with_colors(int floor_num){
                     }
                     if(map[y][x].ch == 'f' && map[y][x].color_pair == 20 && !map[y][x].color_check){
                         int random = rand() % 6;
-                        if(random < 3){
+                        if((random < 3) || (random == 5)){
                             map[y][x].color_pair = 14;
                         }
                         else if(random == 3){
@@ -1467,9 +1492,6 @@ void print_map_with_colors(int floor_num){
                         }
                         else if(random == 4){
                             map[y][x].color_pair = 13;
-                        }
-                        else if(random == 5){
-                            map[y][x].color_pair = 10;
                         }
                         map[y][x].color_check = 1;
                         attron(COLOR_PAIR(map[y][x].color_pair));
@@ -2431,6 +2453,31 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             }
             hunger_full_start_time = current_time;
         }
+
+        if(difftime(current_time, speed_time) >= 10){
+            speed = 1;
+        }
+
+        if(difftime(current_time, normal_food_time) >= 60){
+            food[3]++;
+            normal_food_time = time(NULL);
+        }
+
+        if(difftime(current_time, deluxe_food_time) >= 60){
+            if(food[1] > 0){
+                food[1]--;
+            }
+            food[0]++;
+            deluxe_food_time = time(NULL);
+        }
+
+        if(difftime(current_time, magical_food_time) >= 60){
+            if(food[2] > 0){
+                food[2]--;
+            }
+            food[0]++;
+            magical_food_time = time(NULL);
+        }
         
         mvprintw(LINES - 1, 30, "Score:");
         mvprintw(LINES - 1, 50, "Hits:   /15");
@@ -2933,7 +2980,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                         if(map[y][x].ch == 'f'){
                             if(!map[y][x].color_check){
                                 int random = rand() % 6;
-                                if(random < 3){
+                                if((random < 3) || (random == 5)){
                                     map[y][x].color_pair = 14;
                                 }
                                 else if(random == 3){
@@ -2941,9 +2988,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                                 }
                                 else if(random == 4){
                                     map[y][x].color_pair = 13;
-                                }
-                                else if(random == 5){
-                                    map[y][x].color_pair = 10;
                                 }
                                 map[y][x].color_check = 1;
                             }
