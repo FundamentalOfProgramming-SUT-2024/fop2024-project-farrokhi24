@@ -1922,70 +1922,72 @@ int game_pause(){
 }
 
 void enemy_follow(int floor_num, int i) {
-    if ((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)) {
+    if((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)) {
         return;
     }
-    if ((enemies[i].x < player.x) && (check_movement(1, floor_num, enemies[i].x + 1, enemies[i].y) == 1) && (enemies[i].x + 1 != player.x)) {
+    if((enemies[i].x < player.x) && (check_movement(1, floor_num, enemies[i].x + 1, enemies[i].y) == 1) && (enemies[i].x + 1 != player.x)) {
         enemies[i].x++;
         return;
     }
-    if ((enemies[i].x > player.x) && (check_movement(1, floor_num, enemies[i].x - 1, enemies[i].y) == 1) && (enemies[i].x - 1 != player.x)) {
+    if((enemies[i].x > player.x) && (check_movement(1, floor_num, enemies[i].x - 1, enemies[i].y) == 1) && (enemies[i].x - 1 != player.x)) {
         enemies[i].x--;
         return;
     }
-    if ((enemies[i].y < player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y + 1) == 1) && (enemies[i].y + 1 != player.x)) {
+    if((enemies[i].y < player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y + 1) == 1) && (enemies[i].y + 1 != player.x)) {
         enemies[i].y++;
         return;
     }
-    if ((enemies[i].y > player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y - 1) == 1) && (enemies[i].y - 1 != player.x)) {
+    if((enemies[i].y > player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y - 1) == 1) && (enemies[i].y - 1 != player.x)) {
         enemies[i].y--;
         return;
     }
 }
 
 void enemy_follow_treasure_room(int floor_num, int i) {
-    if ((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)) {
+    if((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)) {
         return;
     }
 
-    // Store the current position of the enemy
     int prev_x = enemies[i].x;
     int prev_y = enemies[i].y;
 
-    if ((enemies[i].x < player.x) && (check_movement(1, floor_num, enemies[i].x + 1, enemies[i].y) == 1) && (enemies[i].x + 1 != player.x)) {
+    if((enemies[i].x < player.x) && (check_movement(1, floor_num, enemies[i].x + 1, enemies[i].y) == 1) && (enemies[i].x + 1 != player.x)) {
         enemies[i].x++;
-    } else if ((enemies[i].x > player.x) && (check_movement(1, floor_num, enemies[i].x - 1, enemies[i].y) == 1) && (enemies[i].x - 1 != player.x)) {
+    }
+    else if((enemies[i].x > player.x) && (check_movement(1, floor_num, enemies[i].x - 1, enemies[i].y) == 1) && (enemies[i].x - 1 != player.x)) {
         enemies[i].x--;
-    } else if ((enemies[i].y < player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y + 1) == 1) && (enemies[i].y + 1 != player.x)) {
+    }
+    else if((enemies[i].y < player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y + 1) == 1) && (enemies[i].y + 1 != player.x)) {
         enemies[i].y++;
-    } else if ((enemies[i].y > player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y - 1) == 1) && (enemies[i].y - 1 != player.x)) {
+    }
+    else if((enemies[i].y > player.y) && (check_movement(1, floor_num, enemies[i].x, enemies[i].y - 1) == 1) && (enemies[i].y - 1 != player.x)) {
         enemies[i].y--;
     }
 
-    // Restore the character and color at the previous position
     mvprintw(prev_y, prev_x, ".");
 }
 
 void enemy_2_follow(int floor_num, int i) {
-    if ((abs(enemies_2[i].x - player.x) <= 1) && (abs(enemies_2[i].y - player.y) <= 1)) {
+    if((abs(enemies_2[i].x - player.x) <= 1) && (abs(enemies_2[i].y - player.y) <= 1)) {
         return;
     }
 
-    // Store the current position of the enemy
     int prev_x = enemies_2[i].x;
     int prev_y = enemies_2[i].y;
 
-    if ((enemies_2[i].x < player.x) && (check_movement(1, floor_num, enemies_2[i].x + 1, enemies_2[i].y) == 1) && (enemies_2[i].x + 1 != player.x)) {
+    if((enemies_2[i].x < player.x) && (check_movement(1, floor_num, enemies_2[i].x + 1, enemies_2[i].y) == 1) && (enemies_2[i].x + 1 != player.x)) {
         enemies_2[i].x++;
-    } else if ((enemies_2[i].x > player.x) && (check_movement(1, floor_num, enemies_2[i].x - 1, enemies_2[i].y) == 1) && (enemies_2[i].x - 1 != player.x)) {
+    }
+    else if((enemies_2[i].x > player.x) && (check_movement(1, floor_num, enemies_2[i].x - 1, enemies_2[i].y) == 1) && (enemies_2[i].x - 1 != player.x)) {
         enemies_2[i].x--;
-    } else if ((enemies_2[i].y < player.y) && (check_movement(1, floor_num, enemies_2[i].x, enemies_2[i].y + 1) == 1) && (enemies_2[i].y + 1 != player.x)) {
+    }
+    else if((enemies_2[i].y < player.y) && (check_movement(1, floor_num, enemies_2[i].x, enemies_2[i].y + 1) == 1) && (enemies_2[i].y + 1 != player.x)) {
         enemies_2[i].y++;
-    } else if ((enemies_2[i].y > player.y) && (check_movement(1, floor_num, enemies_2[i].x, enemies_2[i].y - 1) == 1) && (enemies_2[i].y - 1 != player.x)) {
+    }
+    else if((enemies_2[i].y > player.y) && (check_movement(1, floor_num, enemies_2[i].x, enemies_2[i].y - 1) == 1) && (enemies_2[i].y - 1 != player.x)) {
         enemies_2[i].y--;
     }
 
-    // Restore the character and color at the previous position
     mvprintw(prev_y, prev_x, ".");
 }
 
