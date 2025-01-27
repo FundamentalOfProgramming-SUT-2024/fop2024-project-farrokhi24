@@ -31,7 +31,8 @@ struct point staircases[4];
 int food[4] ={0, 0, 0, 0};
 int hunger = 0;
 int backpack[5] = {1, 0, 0, 0, 0};
-int default_weapon = 3;
+int default_weapon;
+char *weapon_names[6] = {"Mace", "Dagger", "Magic Wand", "Normal Arrow", "Sword", "None"};
 int spells[3] ={0, 0, 0};
 int ancient_key_count = 0;
 struct point ancient_key;
@@ -1001,28 +1002,75 @@ void weapon_list(){
         clear();
         attroff(A_REVERSE);
         attron(A_BOLD);
-        mvprintw(LINES / 2 - 6, (COLS - 11) / 2, "Backpack: ");
+        mvprintw(LINES / 2 - 7, (COLS - 8) / 2, "Backpack: ");
         attroff(A_BOLD);
 
-        mvprintw(LINES / 2 - 4, (COLS - 16) / 2, "Mace: %d", backpack[0]);
-        mvprintw(LINES / 2 - 2, (COLS - 16) / 2, "Dagger: %d", backpack[1]);
-        mvprintw(LINES / 2, (COLS - 16) / 2, "Magic Wand: %d", backpack[2]);
-        mvprintw(LINES / 2 + 2, (COLS - 16) / 2, "Normal Arrow: %d", backpack[3]);
-        mvprintw(LINES / 2 + 4, (COLS - 16) / 2, "Sword: %d", backpack[4]);
+        mvprintw(LINES / 2 - 5, (COLS) / 2, "|");
+        mvprintw(LINES / 2 - 4, (COLS - 42) / 2, "  Long-Range Weapons | Short-Range Weapons");
+        mvprintw(LINES / 2 - 3, (COLS - 50) / 2, "   ______________________|________________________");
+        mvprintw(LINES / 2 - 2, (COLS) / 2, "|");
+        mvprintw(LINES / 2 - 1, (COLS) / 2, "|");
+        mvprintw(LINES / 2, (COLS) / 2, "|");
+        mvprintw(LINES / 2 + 1, (COLS) / 2, "|");
+        mvprintw(LINES / 2 + 2, (COLS) / 2, "|");
+        mvprintw(LINES / 2 + 2, (COLS) / 2, "|");
+        mvprintw(LINES / 2 + 3, (COLS) / 2, "|");
+        mvprintw(LINES / 2 + 4, (COLS) / 2, "|");
 
-        mvprintw(LINES / 2 - 4, (COLS - 22) / 2, "\U00002692");
-        mvprintw(LINES / 2 - 2, (COLS - 22) / 2, "\U0001F5E1");
-        mvprintw(LINES / 2, (COLS - 22) / 2, "\U0001FA84");
-        mvprintw(LINES / 2 + 2, (COLS - 22) / 2, "\U000027B3");
-        mvprintw(LINES / 2 + 4, (COLS - 22) / 2, "\U00002694");
+        mvprintw(LINES / 2 - 1, (COLS - 34) / 2 + 3, "Mace (m): %d", backpack[0]);
+        mvprintw(LINES / 2 + 1, (COLS - 34) / 2 + 3, "Sword (s): %d", backpack[4]);
+
+        mvprintw(LINES / 2 - 1, (COLS + 8) / 2 + 3, "Dagger (d): %d", backpack[1]);
+        mvprintw(LINES / 2 + 1, (COLS + 8) / 2 + 3, "Magic Wand (w): %d", backpack[2]);
+        mvprintw(LINES / 2 + 3, (COLS + 8) / 2 + 3, "Normal Arrow (a): %d", backpack[3]);
+
+        mvprintw(LINES / 2 - 1, (COLS - 40) / 2 + 3, "\U00002692");
+        mvprintw(LINES / 2 + 1, (COLS - 40) / 2 + 3, "\U00002694");
+
+        mvprintw(LINES / 2 - 1, (COLS + 3) / 2 + 3, "\U0001F5E1");
+        mvprintw(LINES / 2 + 1, (COLS + 3) / 2 + 3, "\U0001FA84");
+        mvprintw(LINES / 2 + 3, (COLS + 3) / 2 + 3, "\U000027B3");
+
+        mvprintw(LINES / 2 + 6, (COLS - 4) / 2 - 15, "Press a Key to Pick a Weapon.");
 
         attron(A_REVERSE);
-        mvprintw(LINES / 2 + 6, (COLS - 4) / 2, "Back");
+        mvprintw(LINES / 2 + 8, (COLS - 4) / 2, "Back");
         attroff(A_REVERSE);
         
         int c = getch();
-        if(c == 10){
+        if(c == 'm'){
+            default_weapon = 0;
+            mvprintw(0, 0, "You Picked Mace.");
+            getch();
+        }
+        else if(c == 'd'){
+            default_weapon = 1;
+            mvprintw(0, 0, "You Picked agger.");
+            getch();
+        }
+        else if(c == 'w'){
+            default_weapon = 2;
+            mvprintw(0, 0, "You Picked Magic Wand.");
+            getch();
+        }
+        else if(c == 'a'){
+            default_weapon = 3;
+            mvprintw(0, 0, "You Picked Normal Arrow.");
+            getch();
+        }
+        else if(c == 's'){
+            default_weapon = 4;
+            mvprintw(0, 0, "You Picked Sword.");
+            getch();
+        }
+        else if(c == 10){
             break;
+        }
+        else{
+            attron(COLOR_PAIR(1));
+            mvprintw(0, 0, "Invalid Key. Press Any Key to Continue");
+            attroff(COLOR_PAIR(1));
+            getch();
         }
     }
 
@@ -1421,6 +1469,7 @@ void print_full_map(int floor_num){
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
 
+    mvprintw(0, COLS / 2 - 6, "Current Weapon: %s", weapon_names[default_weapon]);
     mvprintw(LINES - 1, 38, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
@@ -1646,6 +1695,7 @@ void print_map_with_colors(int floor_num){
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
 
+    mvprintw(0, COLS / 2 - 6, "Current Weapon: %s", weapon_names[default_weapon]);
     mvprintw(LINES - 1, 38, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
@@ -1907,6 +1957,7 @@ int treasure_room(){
 
         refresh();
 
+        mvprintw(0, COLS / 2 - 6, "Current Weapon: %s", weapon_names[default_weapon]);
         mvprintw(LINES - 1, 96, "%d", gold);
         mvprintw(LINES - 1, 75, "%2d", strength);
         mvprintw(LINES - 1, 56, "%2d", player.hits);
@@ -2145,7 +2196,7 @@ int enemy_hit_check(int x, int y, int damage){
             mvprintw(0, 0, "You Scored an Excellent hit on the Demon.");
         }
         getch();
-        mvprintw(0, 0, "                                              ");
+        mvprintw(0, 0, "                                          ");
         return 1;
     }
     if(mvinch(y, x) == 'F'){
@@ -2158,7 +2209,7 @@ int enemy_hit_check(int x, int y, int damage){
             mvprintw(0, 0, "You Scored an Excellent hit on the Fire Breathing Monster.");
         }
         getch();
-        mvprintw(0, 0, "                                              ");
+        mvprintw(0, 0, "                                                          ");
         return 1;
     }
     if(mvinch(y, x) == 'G'){
@@ -2171,7 +2222,7 @@ int enemy_hit_check(int x, int y, int damage){
             mvprintw(0, 0, "You Scored an Excellent hit on the Giant.");
         }
         getch();
-        mvprintw(0, 0, "                                              ");
+        mvprintw(0, 0, "                                         ");
         return 1;
     }
     if(mvinch(y, x) == 'S'){
@@ -2184,7 +2235,7 @@ int enemy_hit_check(int x, int y, int damage){
             mvprintw(0, 0, "You Scored an Excellent hit on the Snake.");
         }
         getch();
-        mvprintw(0, 0, "                                              ");
+        mvprintw(0, 0, "                                         ");
         return 1;
     }
     if(mvinch(y, x) == 'U'){
@@ -2197,7 +2248,7 @@ int enemy_hit_check(int x, int y, int damage){
             mvprintw(0, 0, "You Scored an Excellent hit on the Undead.");
         }
         getch();
-        mvprintw(0, 0, "                                              ");
+        mvprintw(0, 0, "                                           ");
         return 1;
     }
     return 0;
@@ -2579,6 +2630,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         attroff(COLOR_PAIR(5));
         refresh();
 
+        mvprintw(0, COLS / 2 - 6, "Current Weapon: %s", weapon_names[default_weapon]);
         mvprintw(LINES - 1, 96, "%d", gold);
         mvprintw(LINES - 1, 75, "%2d", strength);
         mvprintw(LINES - 1, 56, "%2d", player.hits);
@@ -2842,11 +2894,39 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 return -5;
             }
         }
+        else if(c == 'w'){
+            attron(COLOR_PAIR(5));
+            mvprintw(player.y, player.x, "\U0001FBC5");
+            attroff(COLOR_PAIR(5));
+            if(default_weapon == 5){
+                mvprintw(0, 0, "You Have no Weapons on Hand.");
+                getch();
+                mvprintw(0, 0, "                            ");
+            }
+            else{
+                default_weapon = 5;
+                mvprintw(0, 0, "You Put The Weapon in the Backpack.");
+                getch();
+                mvprintw(0, 0, "                                   ");
+            }
+            mvprintw(player.y, player.x, "%c", player.under.ch);
+        }
         else if(c == 32){
             player.under.ch = mvinch(player.y, player.x) & A_CHARTEXT;
             attron(COLOR_PAIR(5));
             mvprintw(player.y, player.x, "\U0001FBC5");
             attroff(COLOR_PAIR(5));
+            if(default_weapon == 6){
+                for(int delta_x = -1; delta_x <= 1; delta_x++){
+                    for(int delta_y = -1; delta_y <= 1; delta_y++){
+                        if(delta_x == 0 && delta_y == 0){
+                            continue;
+                        }
+                        enemy_hit_check(player.x + delta_x, player.y + delta_y, 1);
+                        mvprintw(0, 0, "                                         ");
+                    }
+                }
+            }
             if(default_weapon == 0){
                 for(int delta_x = -1; delta_x <= 1; delta_x++){
                     for(int delta_y = -1; delta_y <= 1; delta_y++){
@@ -3513,6 +3593,7 @@ void save_game(char* filename, int floor_num){
 
 void play(char *username, char color, char difficulty, int song){
     int floor_num;
+    default_weapon = 0;
 
     char filename[100];
     strcpy(filename, username);
