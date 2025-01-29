@@ -33,6 +33,7 @@ int hunger = 0;
 int backpack[5] = {1, 0, 0, 0, 0};
 int default_weapon;
 char *weapon_names[6] = {"Mace", "Dagger", "Magic Wand", "Normal Arrow", "Sword", "None"};
+char *enemy_names[6] = {"Demon", "Fire Breathing Monster", "Giant", "Snake", "Undead"};
 int spells[3] ={0, 0, 0};
 int ancient_key_count = 0;
 struct point ancient_key;
@@ -42,8 +43,9 @@ int speed = 1;
 long int speed_time;
 int snake_check = 0;
 long int normal_food_time = 0, magical_food_time = 0, deluxe_food_time = 0;
-long int hit_time, regen_time;
+long int hit_time, heal_time, damage_time, double_heal_time;
 int damage_co = 1;
+int heal = 1;
 
 struct player{
     int x;
@@ -51,6 +53,7 @@ struct player{
     character under;
     int hits;
     int alive;
+    int damage;
 };
 
 struct player player;
@@ -1033,7 +1036,7 @@ void weapon_list(){
         mvprintw(LINES / 2 + 1, (COLS + 3) / 2 + 3, "\U0001FA84");
         mvprintw(LINES / 2 + 3, (COLS + 3) / 2 + 3, "\U000027B3");
 
-        mvprintw(LINES / 2 + 6, (COLS - 4) / 2 - 12, "Press a Key to Pick a Weapon.");
+        mvprintw(LINES / 2 + 6, COLS / 2 - 10, "Current Weapon: %s", weapon_names[default_weapon]);
 
         attron(A_REVERSE);
         mvprintw(LINES / 2 + 8, (COLS - 4) / 2, "Back");
@@ -1180,7 +1183,8 @@ void spell_list(){
             if(highlight == 0){
                 if(spells[0] > 0){
                     spells[0]--;
-                    //Increase Health Time
+                    heal = 2;
+                    double_heal_time = time(NULL);
                 }
                 else{
                     attron(COLOR_PAIR(1));
@@ -1193,6 +1197,7 @@ void spell_list(){
                 if(spells[1] > 0){
                     spells[1]--;
                     speed = 2;
+                    speed_time = time(NULL);
                 }
                 else{
                     attron(COLOR_PAIR(1));
@@ -1205,6 +1210,7 @@ void spell_list(){
                 if(spells[2] > 0){
                     spells[2]--;
                     damage_co = 2;
+                    damage_time = time(NULL);
                 }
                 else{
                     attron(COLOR_PAIR(1));
@@ -1289,7 +1295,7 @@ void print_full_map(int floor_num){
     attroff(COLOR_PAIR(20));
 
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /15");
+    mvprintw(LINES - 1, 50, "Hits:   /20");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1553,7 +1559,7 @@ void print_full_map(int floor_num){
     }
 
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /15");
+    mvprintw(LINES - 1, 50, "Hits:   /20");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1561,7 +1567,6 @@ void print_full_map(int floor_num){
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
 
-    mvprintw(0, COLS / 2 - 6, "Current Weapon: %s", weapon_names[default_weapon]);
     mvprintw(LINES - 1, 38, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
@@ -1578,7 +1583,7 @@ void print_map_with_colors(int floor_num){
     }
     
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /15");
+    mvprintw(LINES - 1, 50, "Hits:   /20");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1779,7 +1784,7 @@ void print_map_with_colors(int floor_num){
     }
     
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /15");
+    mvprintw(LINES - 1, 50, "Hits:   /20");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1787,7 +1792,6 @@ void print_map_with_colors(int floor_num){
 
     mvprintw(0, COLS - 25, "You are on Floor %d", floor_num);
 
-    mvprintw(0, COLS / 2 - 6, "Current Weapon: %s", weapon_names[default_weapon]);
     mvprintw(LINES - 1, 38, "%d", gold);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
@@ -1921,8 +1925,17 @@ int game_pause(){
     }
 }
 
-void enemy_follow(int floor_num, int i) {
-    if((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)) {
+void enemy_follow(int floor_num, int i){
+    if((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)){
+        if(enemies[i].alive == 1){
+            player.hits -= enemies[i].damage;
+            mvprintw(0, 0, "The %s Took a Hit on You!", enemy_names[i]);
+            getch();
+            mvprintw(0, 0, "                                             ");
+            if(player.hits < 0){
+                player.hits = 0;
+            }
+        }
         return;
     }
     if((enemies[i].x < player.x) && (check_movement(1, floor_num, enemies[i].x + 1, enemies[i].y) == 1) && (enemies[i].x + 1 != player.x)) {
@@ -1944,7 +1957,16 @@ void enemy_follow(int floor_num, int i) {
 }
 
 void enemy_follow_treasure_room(int floor_num, int i) {
-    if((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)) {
+    if((abs(enemies[i].x - player.x) <= 1) && (abs(enemies[i].y - player.y) <= 1)){
+        if(enemies[i].alive == 1){
+            player.hits -= enemies[i].damage;
+            mvprintw(0, 0, "The %s Took a Hit on You!", enemy_names[i]);
+            getch();
+            mvprintw(0, 0, "                                             ");
+            if(player.hits < 0){
+                player.hits = 0;
+            }
+        }
         return;
     }
 
@@ -1969,6 +1991,15 @@ void enemy_follow_treasure_room(int floor_num, int i) {
 
 void enemy_2_follow(int floor_num, int i) {
     if((abs(enemies_2[i].x - player.x) <= 1) && (abs(enemies_2[i].y - player.y) <= 1)) {
+        if(enemies_2[i].alive == 1){
+            player.hits -= enemies[i].damage;
+            mvprintw(0, 0, "The %s Took a Hit on You!", enemy_names[i]);
+            getch();
+            mvprintw(0, 0, "                                             ");
+            if(player.hits < 0){
+                player.hits = 0;
+            }
+        }
         return;
     }
 
@@ -2003,6 +2034,77 @@ void print_treasure_room_enemies(){
         }
     }
 }
+
+int enemy_hit_check(int x, int y, int damage){
+    damage *= damage_co;
+    if(mvinch(y, x) == 'D'){
+        //enemies[0].hits -= damage;
+        if(enemies[0].hits <= 0){
+            enemies[0].alive = 0;
+            mvprintw(0, 0, "You Have Defeated the Demon.");
+        }
+        else{
+            mvprintw(0, 0, "You Scored an Excellent hit on the Demon.");
+        }
+        getch();
+        mvprintw(0, 0, "                                                   ");
+        return 1;
+    }
+    if(mvinch(y, x) == 'F'){
+        enemies[1].hits -= damage;
+        if(enemies[1].hits <= 0){
+            enemies[1].alive = 0;
+            mvprintw(0, 0, "You Have Defeated the Fire Breathing Monster.");
+        }
+        else{
+            mvprintw(0, 0, "You Scored an Excellent hit on the Fire Breathing Monster.");
+        }
+        getch();
+        mvprintw(0, 0, "                                                          ");
+        return 1;
+    }
+    if(mvinch(y, x) == 'G'){
+        enemies[2].hits -= damage;
+        if(enemies[2].hits <= 0){
+            enemies[2].alive = 0;
+            mvprintw(0, 0, "You Have Defeated the Giant.");
+        }
+        else{
+            mvprintw(0, 0, "You Scored an Excellent hit on the Giant.");
+        }
+        getch();
+        mvprintw(0, 0, "                                         ");
+        return 1;
+    }
+    if(mvinch(y, x) == 'S'){
+        enemies[3].hits -= damage;
+        if(enemies[3].hits <= 0){
+            enemies[3].alive = 0;
+            mvprintw(0, 0, "You Have Defeated the Snake.");
+        }
+        else{
+            mvprintw(0, 0, "You Scored an Excellent hit on the Snake.");
+        }
+        getch();
+        mvprintw(0, 0, "                                         ");
+        return 1;
+    }
+    if(mvinch(y, x) == 'U'){
+        enemies[4].hits -= damage;
+        if(enemies[4].hits <= 0){
+            enemies[4].alive = 0;
+            mvprintw(0, 0, "You Have Defeated the Undead.");
+        }
+        else{
+            mvprintw(0, 0, "You Scored an Excellent hit on the Undead.");
+        }
+        getch();
+        mvprintw(0, 0, "                                           ");
+        return 1;
+    }
+    return 0;
+}
+
 
 int treasure_room(){
     init_pair(9, COLOR_CYAN, COLOR_BLACK);
@@ -2112,7 +2214,7 @@ int treasure_room(){
     int floor_num = 4;
     while(1){
         mvprintw(LINES - 1, 30, "Score:");
-        mvprintw(LINES - 1, 50, "Hits:   /15");
+        mvprintw(LINES - 1, 50, "Hits:   /20");
         mvprintw(LINES - 1, 70, "Str:   /20");
         mvprintw(LINES - 1, 90, "Gold:");
         mvprintw(LINES - 1, 110, "Exp:");
@@ -2125,29 +2227,391 @@ int treasure_room(){
         mvprintw(LINES - 1, 75, "%2d", strength);
         mvprintw(LINES - 1, 56, "%2d", player.hits);
 
+        print_treasure_room_enemies();
+        refresh();
         attron(COLOR_PAIR(5));
         mvprintw(player.y, player.x, "\U0001FBC5");
         attroff(COLOR_PAIR(5));
-
-        print_treasure_room_enemies();
-        refresh();
         
         int c = getch();
-
-        attron(COLOR_PAIR(9));
         mvprintw(player.y, player.x, "%c", player.under.ch);
 
+        attron(COLOR_PAIR(9));
+        
+        int f_check = 0;
+        if(c == 'f' || c == 'F'){
+            f_check = 1;
+            attron(COLOR_PAIR(5));
+            mvprintw(player.y, player.x, "\U0001FBC5");
+            attroff(COLOR_PAIR(5));
+            c = getch();
+            mvprintw(player.y, player.x, "%c", player.under.ch); 
+        }
+        int g_check = 0;
+        if(c == 'g' || c == 'G'){
+            g_check = 1;
+            attron(COLOR_PAIR(5));
+            mvprintw(player.y, player.x, "\U0001FBC5");
+            attroff(COLOR_PAIR(5));
+            c = getch();
+            mvprintw(player.y, player.x, "%c", player.under.ch);
+        }
+
         if((c == 'h' || c == 'H' || c == '4') && check_movement(0, floor_num, player.x - 1, player.y)){
-            player.x--;
+            if(f_check == 0){
+                player.x--;
+                if((speed == 2) && check_movement(0, floor_num, player.x - 1, player.y)){
+                    player.x--;
+                }
+            }
+            else{
+                while(check_movement(0, floor_num, player.x - 1, player.y)){
+                    player.x--;
+                }
+            }
         }
         else if((c == 'k' || c == 'K' || c == '2') && check_movement(0, floor_num, player.x, player.y + 1)){
-            player.y++;
+            if(f_check == 0){
+                player.y++;
+                if((speed == 2) && check_movement(0, floor_num, player.x, player.y + 1)){
+                    player.y++;
+                }
+            }
+            else{
+                while(check_movement(0, floor_num, player.x, player.y + 1)){
+                    player.y++;
+                }
+            }
         }
         else if((c == 'j' || c == 'J' || c == '8') && check_movement(0, floor_num, player.x, player.y - 1)){
-            player.y--;
+            if(f_check == 0){
+                player.y--;
+                if((speed == 2) && check_movement(0, floor_num, player.x, player.y - 1)){
+                    player.y--;
+                }
+            }
+            else{
+                while(check_movement(0, floor_num, player.x, player.y - 1)){
+                    player.y--;
+                }
+            }
         }
         else if((c == 'l' || c == 'L' || c == '6') && check_movement(0, floor_num, player.x + 1, player.y)){
-            player.x++;
+            if(f_check == 0){
+                player.x++;
+                if((speed == 2) && check_movement(0, floor_num, player.x + 1, player.y)){
+                    player.x++;
+                }
+            }
+            else{
+                while(check_movement(0, floor_num, player.x + 1, player.y)){
+                    player.x++;
+                }
+            }
+        }
+        else if((c == 'y' || c == 'Y' || c == '7') && check_movement(0, floor_num, player.x - 1, player.y - 1)){
+            if(f_check == 0){
+                player.x--;
+                player.y--;
+                if((speed == 2) && check_movement(0, floor_num, player.x - 1, player.y - 1)){
+                    player.x--;
+                    player.y--;
+                }
+            }
+            else{
+                while(check_movement(0, floor_num, player.x - 1, player.y - 1)){
+                    player.x--;
+                    player.y--;
+                }
+            }
+        }
+        else if((c == 'u' || c == 'U' || c == '9') && check_movement(0, floor_num, player.x + 1, player.y - 1)){
+            if(f_check == 0){
+                player.x++;
+                player.y--;
+                if((speed == 2) && check_movement(0, floor_num, player.x + 1, player.y - 1)){
+                    player.x++;
+                    player.y--;
+                }
+            }
+            else{
+                while(check_movement(0, floor_num, player.x + 1, player.y - 1)){
+                    player.x++;
+                    player.y--;
+                }
+            }
+        }
+        else if((c == 'b' || c == 'B' || c == '1') && check_movement(0, floor_num, player.x - 1, player.y + 1)){
+            if(f_check == 0){
+                player.x--;
+                player.y++;
+                if((speed == 2) && check_movement(0, floor_num, player.x - 1, player.y + 1)){
+                    player.x--;
+                    player.y++;
+                }
+            }
+            else{
+                while(check_movement(0, floor_num, player.x - 1, player.y + 1)){
+                    player.x--;
+                    player.y++;
+                }
+            }
+        }
+        else if((c == 'n' || c == 'N' || c == '3') && check_movement(0, floor_num, player.x + 1, player.y + 1)){
+            if(f_check == 0){
+                player.x++;
+                player.y++;
+                if((speed == 2) && check_movement(0, floor_num, player.x + 1, player.y + 1)){
+                    player.x++;
+                    player.y++;
+                }
+            }
+            else{
+                while(check_movement(0, floor_num, player.x + 1, player.y + 1)){
+                    player.x++;
+                    player.y++;
+                }
+            }
+        }
+        else if(c == 'e' || c == 'E'){
+            food_list(&strength);
+        }
+        else if(c == 'i' || c == 'I'){
+            weapon_list();
+        }
+        else if(c == 'x' || c == 'X'){
+            spell_list();
+        }
+        else if(c == 27){
+            int choice = game_pause();
+            if(choice == 1){
+                return -1 * floor_num;
+            }
+            if(choice == 2){
+                return -5;
+            }
+        }
+        else if(c == 'w'){
+            attron(COLOR_PAIR(5));
+            mvprintw(player.y, player.x, "\U0001FBC5");
+            attroff(COLOR_PAIR(5));
+            if(default_weapon == 5){
+                mvprintw(0, 0, "You Have no Weapons on Hand.");
+                getch();
+                mvprintw(0, 0, "                            ");
+            }
+            else{
+                default_weapon = 5;
+                mvprintw(0, 0, "You Put The Weapon in the Backpack.");
+                getch();
+                mvprintw(0, 0, "                                   ");
+            }
+            mvprintw(player.y, player.x, "%c", player.under.ch);
+        }
+        else if(c == 32){
+            player.under.ch = mvinch(player.y, player.x) & A_CHARTEXT;
+            attron(COLOR_PAIR(5));
+            mvprintw(player.y, player.x, "\U0001FBC5");
+            attroff(COLOR_PAIR(5));
+            if(default_weapon == 6){
+                for(int delta_x = -1; delta_x <= 1; delta_x++){
+                    for(int delta_y = -1; delta_y <= 1; delta_y++){
+                        if(delta_x == 0 && delta_y == 0){
+                            continue;
+                        }
+                        enemy_hit_check(player.x + delta_x, player.y + delta_y, 1);
+                        mvprintw(0, 0, "                                         ");
+                    }
+                }
+            }
+            if(default_weapon == 0){
+                for(int delta_x = -1; delta_x <= 1; delta_x++){
+                    for(int delta_y = -1; delta_y <= 1; delta_y++){
+                        if(delta_x == 0 && delta_y == 0){
+                            continue;
+                        }
+                        enemy_hit_check(player.x + delta_x, player.y + delta_y, 5);
+                        mvprintw(0, 0, "                                         ");
+                    }
+                }
+            }
+            if(default_weapon == 1){
+                if(backpack[1] == 0){
+                    mvprintw(0, 0, "You Are Out of Daggers.");
+                    getch();
+                    mvprintw(0, 0, "                       ");
+                }
+                else{
+                    int dir = getch();
+                    int displacement = 0, dagger_x = player.x, dagger_y = player.y;
+                    if(dir == KEY_RIGHT){
+                        while(check_movement(2, floor_num, dagger_x + 1, dagger_y) && (displacement < 5)){
+                            dagger_x++;
+                            displacement++;
+                            if(enemy_hit_check(dagger_x, dagger_y, 12) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(dir == KEY_LEFT){
+                        while(check_movement(2, floor_num, dagger_x - 1, dagger_y) && (displacement < 5)){
+                            dagger_x--;
+                            displacement++;
+                            if(enemy_hit_check(dagger_x, dagger_y, 12) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(dir == KEY_DOWN){
+                        while(check_movement(2, floor_num, dagger_x, dagger_y + 1) && (displacement < 5)){
+                            dagger_y++;
+                            displacement++;
+                            if(enemy_hit_check(dagger_x, dagger_y, 12) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(dir == KEY_UP){
+                        while(check_movement(2, floor_num, dagger_x, dagger_y - 1) && (displacement < 5)){
+                            dagger_y--;
+                            displacement++;
+                            if(enemy_hit_check(dagger_x, dagger_y, 12) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(enemy_hit_check(dagger_x, dagger_y, 12) == 0){
+                        map[dagger_y][dagger_x].ch = 'q';
+                        map[dagger_y][dagger_x].color_pair = 16;
+                        attron(COLOR_PAIR(16));
+                        mvprintw(dagger_y, dagger_x, "q");
+                        attroff(COLOR_PAIR(16));
+                    }
+                    backpack[1]--;
+                }
+            }
+            if(default_weapon == 2){
+                if(backpack[2] == 0){
+                    mvprintw(0, 0, "You Are Out of Magic Wands.");
+                    getch();
+                    mvprintw(0, 0, "                           ");
+                }
+                else{
+                    int dir = getch();
+                    int displacement = 0, wand_x = player.x, wand_y = player.y;
+                    if(dir == KEY_RIGHT){
+                        while(check_movement(2, floor_num, wand_x + 1, wand_y) && (displacement < 10)){
+                            wand_x++;
+                            displacement++;
+                            if(enemy_hit_check(wand_x, wand_y, 15) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(dir == KEY_LEFT){
+                        while(check_movement(2, floor_num, wand_x - 1, wand_y) && (displacement < 10)){
+                            wand_x--;
+                            displacement++;
+                            if(enemy_hit_check(wand_x, wand_y, 15) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(dir == KEY_DOWN){
+                        while(check_movement(2, floor_num, wand_x, wand_y + 1) && (displacement < 10)){
+                            wand_y++;
+                            displacement++;
+                            if(enemy_hit_check(wand_x, wand_y, 15) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(dir == KEY_UP){
+                        while(check_movement(2, floor_num, wand_x, wand_y - 1) && (displacement < 10)){
+                            wand_y--;
+                            displacement++;
+                            if(enemy_hit_check(wand_x, wand_y, 15) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(enemy_hit_check(wand_x, wand_y, 15) == 0){
+                        map[wand_y][wand_x].ch = 'w';
+                        map[wand_y][wand_x].color_pair = 16;
+                        attron(COLOR_PAIR(16));
+                        mvprintw(wand_y, wand_x, "w");
+                        attroff(COLOR_PAIR(16));
+                    }
+                    backpack[2]--;
+                }
+            }
+            if(default_weapon == 3){
+                if(backpack[3] == 0){
+                    mvprintw(0, 0, "You Are Out of Normal Arrows.");
+                    getch();
+                    mvprintw(0, 0, "                             ");
+                }
+                else{
+                    int dir = getch();
+                    int displacement = 0, wand_x = player.x, wand_y = player.y;
+                    if(dir == KEY_RIGHT){
+                        while(check_movement(2, floor_num, wand_x + 1, wand_y) && (displacement < 5)){
+                            wand_x++;
+                            displacement++;
+                            if(enemy_hit_check(wand_x, wand_y, 5) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(dir == KEY_LEFT){
+                        while(check_movement(2, floor_num, wand_x - 1, wand_y) && (displacement < 5)){
+                            wand_x--;
+                            displacement++;
+                            if(enemy_hit_check(wand_x, wand_y, 5) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(dir == KEY_DOWN){
+                        while(check_movement(2, floor_num, wand_x, wand_y + 1) && (displacement < 5)){
+                            wand_y++;
+                            displacement++;
+                            if(enemy_hit_check(wand_x, wand_y, 5) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(dir == KEY_UP){
+                        while(check_movement(2, floor_num, wand_x, wand_y - 1) && (displacement < 5)){
+                            wand_y--;
+                            displacement++;
+                            if(enemy_hit_check(wand_x, wand_y, 5) == 1){
+                                break;
+                            }
+                        }
+                    }
+                    if(enemy_hit_check(wand_x, wand_y, 5) == 0){
+                        map[wand_y][wand_x].ch = 'a';
+                        map[wand_y][wand_x].color_pair = 16;
+                        attron(COLOR_PAIR(16));
+                        mvprintw(wand_y, wand_x, "a");
+                        attroff(COLOR_PAIR(16));
+                    }
+                    backpack[3]--;
+                }
+            }
+            if(default_weapon == 4){
+                for(int delta_x = -1; delta_x <= 1; delta_x++){
+                    for(int delta_y = -1; delta_y <= 1; delta_y++){
+                        if(delta_x == 0 && delta_y == 0){
+                            continue;
+                        }
+                        enemy_hit_check(player.x + delta_x, player.y + delta_y, 10);
+                        mvprintw(0, 0, "                                         ");
+                    }
+                }
+            }
+            mvprintw(player.y, player.x, "%c", player.under.ch);
         }
         else if(c == 'q'){
             attroff(COLOR_PAIR(9));
@@ -2182,7 +2646,22 @@ int treasure_room(){
         print_treasure_room_enemies();
 
         refresh();
-        
+        if(player.under.ch == '*' && g_check == 0){
+            player.under.ch = '.';
+            map[player.y][player.x].ch = '.';
+            gold++;
+            mvprintw(0, 0, "You Found Gold.");
+            getch();
+            mvprintw(0, 0, "               ");
+        }
+        if(player.under.ch == 'x' && g_check == 0){
+            player.under.ch = '.';
+            map[player.y][player.x].ch = '.';
+            gold += 10;
+            mvprintw(0, 0, "You Found Black Gold.");
+            getch();
+            mvprintw(0, 0, "               ");
+        }
         int trap_num = check_trap(player.x, player.y, traps, trap_count, &strength);
         if(trap_num != -1){
             player.under.ch = '^';
@@ -2193,77 +2672,30 @@ int treasure_room(){
             attroff(COLOR_PAIR(9));
             return -6;
         }
-    }
-}
 
-int enemy_hit_check(int x, int y, int damage){
-    damage *= damage_co;
-    if(mvinch(y, x) == 'D'){
-        enemies[0].hits -= damage;
-        if(enemies[0].hits <= 0){
-            enemies[0].alive = 0;
-            mvprintw(0, 0, "You Have Defeated the Demon.");
+        for(int y = 0; y < LINES; y++){
+            for(int x = 0; x < COLS; x++){
+                if((mvinch(y, x) & A_CHARTEXT) == '.'){
+                    attron(COLOR_PAIR(9));
+                    mvprintw(y, x, ".");
+                    attroff(COLOR_PAIR(9));
+                }
+                if((mvinch(y, x) & A_CHARTEXT) == '*' && (mvinch(y, x) & A_COLOR) != COLOR_PAIR(7)){
+                    attron(COLOR_PAIR(7));
+                    mvprintw(y, x, "*");
+                    attroff(COLOR_PAIR(7));
+                }
+                if((mvinch(y, x) & A_CHARTEXT) == 'x' && (mvinch(y, x) & A_COLOR) != COLOR_PAIR(15)){
+                    attron(COLOR_PAIR(15));
+                    mvprintw(y, x, "x");
+                    attroff(COLOR_PAIR(15));
+                }
+            }
         }
-        else{
-            mvprintw(0, 0, "You Scored an Excellent hit on the Demon.");
+        if(player.hits == 0){
+            return -6;
         }
-        getch();
-        mvprintw(0, 0, "                                                   ");
-        return 1;
     }
-    if(mvinch(y, x) == 'F'){
-        enemies[1].hits -= damage;
-        if(enemies[1].hits <= 0){
-            enemies[1].alive = 0;
-            mvprintw(0, 0, "You Have Defeated the Fire Breathing Monster.");
-        }
-        else{
-            mvprintw(0, 0, "You Scored an Excellent hit on the Fire Breathing Monster.");
-        }
-        getch();
-        mvprintw(0, 0, "                                                          ");
-        return 1;
-    }
-    if(mvinch(y, x) == 'G'){
-        enemies[2].hits -= damage;
-        if(enemies[2].hits <= 0){
-            enemies[2].alive = 0;
-            mvprintw(0, 0, "You Have Defeated the Giant.");
-        }
-        else{
-            mvprintw(0, 0, "You Scored an Excellent hit on the Giant.");
-        }
-        getch();
-        mvprintw(0, 0, "                                         ");
-        return 1;
-    }
-    if(mvinch(y, x) == 'S'){
-        enemies[3].hits -= damage;
-        if(enemies[3].hits <= 0){
-            enemies[3].alive = 0;
-            mvprintw(0, 0, "You Have Defeated the Snake.");
-        }
-        else{
-            mvprintw(0, 0, "You Scored an Excellent hit on the Snake.");
-        }
-        getch();
-        mvprintw(0, 0, "                                         ");
-        return 1;
-    }
-    if(mvinch(y, x) == 'U'){
-        enemies[4].hits -= damage;
-        if(enemies[4].hits <= 0){
-            enemies[4].alive = 0;
-            mvprintw(0, 0, "You Have Defeated the Undead.");
-        }
-        else{
-            mvprintw(0, 0, "You Scored an Excellent hit on the Undead.");
-        }
-        getch();
-        mvprintw(0, 0, "                                           ");
-        return 1;
-    }
-    return 0;
 }
 
 int enter_floor(char *username, char color, char difficulty, int floor_num, char *track_name){
@@ -2453,6 +2885,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         enemies[i].alive = 1;
         enemies[i].under.ch = '.';
         enemies[i].under.color_pair = 21;
+        enemies[i].damage = i + 1;
     }
 
     print_enemies();
@@ -2582,6 +3015,17 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         if(hunger < 20){
             hunger_full = 0;
         }
+        if(hunger == 0){
+            heal_time = time(NULL);
+        }
+
+        if(difftime(current_time, heal_time) >= (3 + 2 * d) / heal){
+            player.hits += 5;
+            if(player.hits > 20){
+                player.hits = 20;
+            }
+            heal_time = current_time;
+        }
 
         if(difftime(current_time, hunger_full_start_time) >= 10 && hunger_full){
             if(strength > 0){
@@ -2592,6 +3036,14 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
 
         if(difftime(current_time, speed_time) >= 10){
             speed = 1;
+        }
+
+        if(difftime(current_time, damage_time) >= 10){
+            damage_co = 1;
+        }
+
+        if(difftime(current_time, double_heal_time) >= 10){
+            heal = 1;
         }
 
         if(difftime(current_time, normal_food_time) >= 60){
@@ -2614,16 +3066,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             food[0]++;
             magical_food_time = time(NULL);
         }
-
-        // if((difftime(current_time, hit_time) >= 10) && (hunger == 20)){
-        //     if((difftime(current_time, regen_time) >= 10) && (hits < 20)){
-        //         hits++;
-        //         regen_time = time(NULL);
-        //     }
-        // }
         
         mvprintw(LINES - 1, 30, "Score:");
-        mvprintw(LINES - 1, 50, "Hits:   /15");
+        mvprintw(LINES - 1, 50, "Hits:   /20");
         mvprintw(LINES - 1, 70, "Str:   /20");
         mvprintw(LINES - 1, 90, "Gold:");
         mvprintw(LINES - 1, 110, "Exp:");
@@ -2642,12 +3087,13 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         attroff(COLOR_PAIR(5));
         refresh();
 
-        mvprintw(0, COLS / 2 - 6, "Current Weapon: %s", weapon_names[default_weapon]);
         mvprintw(LINES - 1, 96, "%d", gold);
         mvprintw(LINES - 1, 75, "%2d", strength);
         mvprintw(LINES - 1, 56, "%2d", player.hits);
         mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
-        mvprintw(LINES - 2, 0, "%d %d %d %d %d", enemies[0].hits, enemies[1].hits, enemies[2].hits, enemies[3].hits, enemies[4].hits);
+
+        mvprintw(LINES - 2, 0, "%d %d %d %d %d", backpack[0], backpack[1], backpack[2], backpack[3], backpack[4]);
+        mvprintw(LINES - 3, 0, "%d %d %d %d %d", enemies[0].hits, enemies[1].hits, enemies[2].hits, enemies[3].hits, enemies[4].hits);
 
         attron(COLOR_PAIR(5));
         mvprintw(player.y, player.x, "\U0001FBC5");
@@ -2659,12 +3105,12 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         print_map_with_colors(floor_num);
 
         int f_check = 0;
-        if(c == 'f' || c == 'f'){
+        if(c == 'f' || c == 'F'){
             f_check = 1;
             c = getch();
         }
         int g_check = 0;
-        if(c == 'T' || c == 'T'){
+        if(c == 'g' || c == 'G'){
             g_check = 1;
             c = getch();
         }
@@ -3007,7 +3453,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
             if(default_weapon == 2){
-                if(backpack[1] == 0){
+                if(backpack[2] == 0){
                     mvprintw(0, 0, "You Are Out of Magic Wands.");
                     getch();
                     mvprintw(0, 0, "                           ");
@@ -3062,7 +3508,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 }
             }
             if(default_weapon == 3){
-                if(backpack[1] == 0){
+                if(backpack[3] == 0){
                     mvprintw(0, 0, "You Are Out of Normal Arrows.");
                     getch();
                     mvprintw(0, 0, "                             ");
@@ -3265,7 +3711,11 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             mvprintw(0, 0, "                  ");
         }
         if(player.under.ch == 'T' && g_check == 0){
-            return treasure_room();
+            int result = treasure_room();
+            clear();
+            getch();
+            mvprintw(0, 0, "%d", result);
+            return result;
         }
         if(player.under.ch == '<'){
             attron(COLOR_PAIR(5));
@@ -3404,6 +3854,9 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             }
         }
         if(strength == 0){
+            return -6;
+        }
+        if(player.hits == 0){
             return -6;
         }
 
@@ -3726,7 +4179,7 @@ void play(char *username, char color, char difficulty, int song){
         mvprintw(LINES / 2, (COLS - 8) / 2, "Score: %d", gold);
         mvprintw(LINES / 2 + 2, (COLS - 28) / 2, "Press Any Key to Continue...");
         getch();
-        return;
+        clear();
     }
     if(floor_num == -6){
         attron(A_BOLD);
@@ -3735,9 +4188,13 @@ void play(char *username, char color, char difficulty, int song){
         mvprintw(LINES / 2, (COLS - 8) / 2, "Score: %d", gold);
         mvprintw(LINES / 2 + 2, (COLS - 28) / 2, "Press Any Key to Continue...");
         getch();
+        clear();
     }
 
     if(floor_num > -5 || floor_num == -6){
+        if(floor_num < -4){
+            floor_num = -4;
+        }
         save_game(filename, -1 * floor_num);
     }
 
