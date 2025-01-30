@@ -35,14 +35,21 @@ void new_game(char *username){
     strcat(filename, ".txt");
 
     FILE *file = fopen(filename, "r");
+    long int current_time;
+    int extra;
+    int games_count;
+
     if(file != NULL){
+        fscanf(file, "Game Finished: %d\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d", &extra, &current_time, &extra, &extra, &extra, &games_count);
         fclose(file);
     }
+    else{
+        current_time = time(NULL);
+        games_count = 1;
+    }
+
     file = fopen(filename, "w");
-
-    long int current_time = time(NULL);
-
-    fprintf(file, "Time: %ld\nScore: 0\nGold: 0\nHits: 20\nGames Played: 0\nStrength: 20\nHunger: 0\nNormal Food: 0\nDeluxe Food: 0\nMagical Food: 0\nRotten Food 0\nMace: 1\nDagger: 0\nWand: 0\nArrow: 0\nSword: 0\nHealth Spell: 0\nSpeed Spell: 0\nDamage Spell: 0\nAncient Key: 0\nFloor: 1\nPlayer y: -1\nPlayer x: -1\n\n\n", current_time);
+    fprintf(file, "Game Finished: 0\nTime: %ld\nScore: 0\nGold: 0\nHits: 20\nGames Played: %d\nStrength: 20\nHunger: 0\nNormal Food: 0\nDeluxe Food: 0\nMagical Food: 0\nRotten Food: 0\nMace: 1\nDagger: 0\nWand: 0\nArrow: 0\nSword: 0\nHealth Spell: 0\nSpeed Spell: 0\nDamage Spell: 0\nAncient Key: 0\nFloor: 1\nPlayer y: -1\nPlayer x: -1\n\n\n", current_time, games_count);
     
     fclose(file);
 }
@@ -87,7 +94,27 @@ int game_menu(char *username, char *color, char *difficulty){
             play(username, *color, *difficulty, *song);
         }
         else if((c == 10) &&(highlight == 2)){
-            play(username, *color, *difficulty, *song);
+            char filename[100];
+            strcpy(filename, username);
+            strcat(filename, ".txt");
+            FILE *file = fopen(filename, "r");
+            char line[COLS - 1];
+            int game_finished;
+            while(fgets(line, sizeof(line), file)){
+                if(sscanf(line, "Game Finished: %d", &game_finished) == 1){
+                    break;
+                }
+            }
+            if(game_finished == 0){
+                play(username, *color, *difficulty, *song);
+            }
+            else{
+                attron(COLOR_PAIR(1));
+                mvprintw(0, 0, "You Have Finished Your Last Game. Start a New Game!");
+                attroff(COLOR_PAIR(1));
+                getch();
+                mvprintw(0, 0, "                                                   ");
+            }
         }
         else if((c == 10) &&(highlight == 3)){
             leaderboard(username);

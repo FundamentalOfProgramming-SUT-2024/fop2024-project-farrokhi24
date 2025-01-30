@@ -26,6 +26,7 @@ struct room rooms[12];
 int current_room = 0;
 int start_check;
 int gold;
+int score;
 int strength = 20;
 struct point staircases[4];
 int food[4] ={0, 0, 0, 0};
@@ -3713,7 +3714,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         if(player.under.ch == 'T' && g_check == 0){
             int result = treasure_room();
             clear();
-            getch();
             mvprintw(0, 0, "%d", result);
             return result;
         }
@@ -4007,11 +4007,10 @@ void save_game(char* filename, int floor_num){
     int previous_score, previous_gold, games_played;
     long int first_time;
     int hits;
-    sscanf(part1, "Time: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\n", &first_time, &previous_score, &previous_gold, &hits, &games_played);
-    games_played += 1;
+    sscanf(part1, "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\n", &first_time, &previous_score, &previous_gold, &hits, &games_played);
 
     char new_text[10000];
-    snprintf(new_text, sizeof(new_text), "Time: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, player.hits, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
+    snprintf(new_text, sizeof(new_text), "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, player.hits, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
 
     char temp_string2[50];
     sprintf(temp_string2, "Room Count%d: ", floor_num);
@@ -4074,6 +4073,42 @@ void save_game(char* filename, int floor_num){
     free(data);
     free(part1);
     free(part2);
+    free(final_data);
+    fclose(file);
+}
+
+void save_finished_game(char *filename){
+    FILE *file = fopen(filename, "r+");
+
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    char *data = malloc(file_size + 1);
+    fread(data, 1, file_size, file);
+    data[file_size] = '\0';
+
+    char temp_string1[50];
+    char *part1;
+    part1 = strdup(data);
+
+    int previous_score, previous_gold, games_played;
+    long int first_time;
+    int hits;
+    sscanf(part1, "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\n", &first_time, &previous_score, &previous_gold, &hits, &games_played);
+    games_played++;
+
+    char new_text[10000];
+    int floor_num = 4;
+    snprintf(new_text, sizeof(new_text), "Game Finished: 1\nTime: %ld\nScore: %d\nGold: %d\nGames Played: %d", start_time, score, gold, games_played);
+
+    char *final_data = malloc(strlen(new_text) + 1);
+    strcpy(final_data, new_text);
+
+    freopen(NULL, "w", file);
+    fputs(final_data, file);
+
+    free(data);
+    free(part1);
     free(final_data);
     fclose(file);
 }
@@ -4170,16 +4205,20 @@ void play(char *username, char color, char difficulty, int song){
         save_floor_map(filename, abs(temp));
         start_check = 0;
         clear();
+        save_finished_game(filename);
     }
     
     if(floor_num == -4){
         attron(A_BOLD);
         mvprintw(LINES / 2 - 2, (COLS - 7) / 2, "You Win");
         attroff(A_BOLD);
-        mvprintw(LINES / 2, (COLS - 8) / 2, "Score: %d", gold);
+        score = gold + 100;
+        mvprintw(LINES / 2, (COLS - 8) / 2 - 1, "Score: %d", score);
         mvprintw(LINES / 2 + 2, (COLS - 28) / 2, "Press Any Key to Continue...");
         getch();
         clear();
+        save_finished_game(filename);
+        return;
     }
     if(floor_num == -6){
         attron(A_BOLD);
@@ -4191,10 +4230,7 @@ void play(char *username, char color, char difficulty, int song){
         clear();
     }
 
-    if(floor_num > -5 || floor_num == -6){
-        if(floor_num < -4){
-            floor_num = -4;
-        }
+    if(floor_num > -5){
         save_game(filename, -1 * floor_num);
     }
 
