@@ -49,7 +49,7 @@ void new_game(char *username){
     }
 
     file = fopen(filename, "w");
-    fprintf(file, "Game Finished: 0\nTime: %ld\nScore: 0\nGold: 0\nHits: 20\nGames Played: %d\nStrength: 20\nHunger: 0\nNormal Food: 0\nDeluxe Food: 0\nMagical Food: 0\nRotten Food: 0\nMace: 1\nDagger: 0\nWand: 0\nArrow: 0\nSword: 0\nHealth Spell: 0\nSpeed Spell: 0\nDamage Spell: 0\nAncient Key: 0\nFloor: 1\nPlayer y: -1\nPlayer x: -1\n\n\n", current_time, games_count);
+    fprintf(file, "Game Finished: 0\nTime: %ld\nScore: 0\nGold: 0\nHits: 100\nGames Played: %d\nStrength: 20\nHunger: 0\nNormal Food: 0\nDeluxe Food: 0\nMagical Food: 0\nRotten Food: 0\nMace: 1\nDagger: 0\nWand: 0\nArrow: 0\nSword: 0\nHealth Spell: 0\nSpeed Spell: 0\nDamage Spell: 0\nAncient Key: 0\nFloor: 1\nPlayer y: -1\nPlayer x: -1\n\n\n", current_time, games_count);
     
     fclose(file);
 }

@@ -1296,7 +1296,7 @@ void print_full_map(int floor_num){
     attroff(COLOR_PAIR(20));
 
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /20");
+    mvprintw(LINES - 1, 50, "Hits:   /100");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1560,7 +1560,7 @@ void print_full_map(int floor_num){
     }
 
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /20");
+    mvprintw(LINES - 1, 50, "Hits:   /100");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1575,6 +1575,8 @@ void print_full_map(int floor_num){
     mvprintw(LINES - 1, 75, "%2d", strength);
     mvprintw(LINES - 1, 56, "%2d", player.hits);
     mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
+
+    print_enemies();
 }
 
 void print_map_with_colors(int floor_num){
@@ -1584,7 +1586,7 @@ void print_map_with_colors(int floor_num){
     }
     
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /20");
+    mvprintw(LINES - 1, 50, "Hits:   /100");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1785,7 +1787,7 @@ void print_map_with_colors(int floor_num){
     }
     
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /20");
+    mvprintw(LINES - 1, 50, "Hits:   /100");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -2215,7 +2217,7 @@ int treasure_room(){
     int floor_num = 4;
     while(1){
         mvprintw(LINES - 1, 30, "Score:");
-        mvprintw(LINES - 1, 50, "Hits:   /20");
+        mvprintw(LINES - 1, 50, "Hits:   /100");
         mvprintw(LINES - 1, 70, "Str:   /20");
         mvprintw(LINES - 1, 90, "Gold:");
         mvprintw(LINES - 1, 110, "Exp:");
@@ -3069,7 +3071,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         }
         
         mvprintw(LINES - 1, 30, "Score:");
-        mvprintw(LINES - 1, 50, "Hits:   /20");
+        mvprintw(LINES - 1, 50, "Hits:   /100");
         mvprintw(LINES - 1, 70, "Str:   /20");
         mvprintw(LINES - 1, 90, "Gold:");
         mvprintw(LINES - 1, 110, "Exp:");
