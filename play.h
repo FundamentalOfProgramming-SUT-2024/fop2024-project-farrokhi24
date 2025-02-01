@@ -53,6 +53,7 @@ struct player{
     int y;
     character under;
     int hits;
+    int stunned;
     int alive;
     int damage;
 };
@@ -1296,7 +1297,7 @@ void print_full_map(int floor_num){
     attroff(COLOR_PAIR(20));
 
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /100");
+    mvprintw(LINES - 1, 49, "Hits:    /100");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1307,7 +1308,7 @@ void print_full_map(int floor_num){
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
     mvprintw(LINES - 1, 75, "%2d", strength);
-    mvprintw(LINES - 1, 56, "%2d", player.hits);
+    mvprintw(LINES - 1, 55, "%3d", player.hits);
 
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
@@ -1560,7 +1561,7 @@ void print_full_map(int floor_num){
     }
 
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /100");
+    mvprintw(LINES - 1, 49, "Hits:    /100");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1573,7 +1574,7 @@ void print_full_map(int floor_num){
     mvprintw(LINES - 1, 75, "  ");
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "%2d", strength);
-    mvprintw(LINES - 1, 56, "%2d", player.hits);
+    mvprintw(LINES - 1, 55, "%3d", player.hits);
     mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
 
     print_enemies();
@@ -1586,7 +1587,7 @@ void print_map_with_colors(int floor_num){
     }
     
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /100");
+    mvprintw(LINES - 1, 49, "Hits:    /100");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1598,7 +1599,7 @@ void print_map_with_colors(int floor_num){
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "  ");
     mvprintw(LINES - 1, 75, "%2d", strength);
-    mvprintw(LINES - 1, 56, "%2d", player.hits);
+    mvprintw(LINES - 1, 55, "%3d", player.hits);
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
             if(map[y][x].color_pair != 0){
@@ -1787,7 +1788,7 @@ void print_map_with_colors(int floor_num){
     }
     
     mvprintw(LINES - 1, 30, "Score:");
-    mvprintw(LINES - 1, 50, "Hits:   /100");
+    mvprintw(LINES - 1, 49, "Hits:    /100");
     mvprintw(LINES - 1, 70, "Str:   /20");
     mvprintw(LINES - 1, 90, "Gold:");
     mvprintw(LINES - 1, 110, "Exp:");
@@ -1801,7 +1802,7 @@ void print_map_with_colors(int floor_num){
     mvprintw(LINES - 1, 75, "%2d", strength);
     mvprintw(LINES - 1, 96, "%d", gold);
     mvprintw(LINES - 1, 75, "%2d", strength);
-    mvprintw(LINES - 1, 56, "%2d", player.hits);
+    mvprintw(LINES - 1, 55, "%3d", player.hits);
     mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
     print_enemies();
 }
@@ -2040,8 +2041,9 @@ void print_treasure_room_enemies(){
 
 int enemy_hit_check(int x, int y, int damage){
     damage *= damage_co;
+    damage = 1;
     if(mvinch(y, x) == 'D'){
-        //enemies[0].hits -= damage;
+        enemies[0].hits -= damage;
         if(enemies[0].hits <= 0){
             enemies[0].alive = 0;
             mvprintw(0, 0, "You Have Defeated the Demon.");
@@ -2064,7 +2066,7 @@ int enemy_hit_check(int x, int y, int damage){
         }
         getch();
         mvprintw(0, 0, "                                                          ");
-        return 1;
+        return 2;
     }
     if(mvinch(y, x) == 'G'){
         enemies[2].hits -= damage;
@@ -2077,7 +2079,7 @@ int enemy_hit_check(int x, int y, int damage){
         }
         getch();
         mvprintw(0, 0, "                                         ");
-        return 1;
+        return 3;
     }
     if(mvinch(y, x) == 'S'){
         enemies[3].hits -= damage;
@@ -2090,7 +2092,7 @@ int enemy_hit_check(int x, int y, int damage){
         }
         getch();
         mvprintw(0, 0, "                                         ");
-        return 1;
+        return 4;
     }
     if(mvinch(y, x) == 'U'){
         enemies[4].hits -= damage;
@@ -2103,7 +2105,7 @@ int enemy_hit_check(int x, int y, int damage){
         }
         getch();
         mvprintw(0, 0, "                                           ");
-        return 1;
+        return 5;
     }
     return 0;
 }
@@ -2200,6 +2202,7 @@ int treasure_room(){
         } while(character != '.');
         enemies[i].hits = enemy_hits[i];
         enemies[i].alive = 1;
+        enemies[i].stunned = 0;
         enemies[i].under.ch = '.';
         enemies[i].under.color_pair = 9;
         do{
@@ -2217,7 +2220,7 @@ int treasure_room(){
     int floor_num = 4;
     while(1){
         mvprintw(LINES - 1, 30, "Score:");
-        mvprintw(LINES - 1, 50, "Hits:   /100");
+        mvprintw(LINES - 1, 49, "Hits:    /100");
         mvprintw(LINES - 1, 70, "Str:   /20");
         mvprintw(LINES - 1, 90, "Gold:");
         mvprintw(LINES - 1, 110, "Exp:");
@@ -2228,7 +2231,7 @@ int treasure_room(){
         mvprintw(LINES - 1, 96, "%d", gold);
         mvprintw(LINES - 1, 75, "  ");
         mvprintw(LINES - 1, 75, "%2d", strength);
-        mvprintw(LINES - 1, 56, "%2d", player.hits);
+        mvprintw(LINES - 1, 55, "%3d", player.hits);
 
         print_treasure_room_enemies();
         refresh();
@@ -2538,12 +2541,16 @@ int treasure_room(){
                             }
                         }
                     }
-                    if(enemy_hit_check(wand_x, wand_y, 15) == 0){
+                    int index = enemy_hit_check(wand_x, wand_y, 15);
+                    if(index == 0){
                         map[wand_y][wand_x].ch = 'w';
                         map[wand_y][wand_x].color_pair = 16;
                         attron(COLOR_PAIR(16));
                         mvprintw(wand_y, wand_x, "w");
                         attroff(COLOR_PAIR(16));
+                    }
+                    else{
+                        enemies[index - 1].stunned = 1;
                     }
                     backpack[2]--;
                 }
@@ -2877,13 +2884,17 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     rooms[find_room(staircases[floor_num].x, staircases[floor_num].y)].theme = 1;
 
     int enemy_hits[6] = {5, 10, 15, 20, 30};
-    for(int i = 0; i < 5; i++){ 
+    for(int i = 0; i < 5; i++){
+        int room_index = -1;
         do{
-            enemies[i].x = random_with_range(0, COLS - 1);
-            enemies[i].y = random_with_range(0, LINES - 1);
+            int random_x = random_with_range(0, COLS - 1);
+            int random_y = random_with_range(0, LINES - 1);
+            room_index = find_room(random_x, random_y);
+            enemies[i].x = random_x;
+            enemies[i].y = random_y;
             chtype ch = mvinch(enemies[i].y, enemies[i].x);
             character = ch & A_CHARTEXT;
-        } while(character != '.');
+        } while((character != '.') && (rooms[room_index].theme != 1));
         enemies[i].hits = enemy_hits[i];
         enemies[i].alive = 1;
         enemies[i].under.ch = '.';
@@ -3071,7 +3082,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         }
         
         mvprintw(LINES - 1, 30, "Score:");
-        mvprintw(LINES - 1, 50, "Hits:   /100");
+        mvprintw(LINES - 1, 49, "Hits:    /100");
         mvprintw(LINES - 1, 70, "Str:   /20");
         mvprintw(LINES - 1, 90, "Gold:");
         mvprintw(LINES - 1, 110, "Exp:");
@@ -3083,7 +3094,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         mvprintw(LINES - 1, 96, "%d", gold);
         mvprintw(LINES - 1, 75, "  ");
         mvprintw(LINES - 1, 75, "%2d", strength);
-        mvprintw(LINES - 1, 56, "%2d", player.hits);
+        mvprintw(LINES - 1, 55, "%3d", player.hits);
 
         attron(COLOR_PAIR(5));
         mvprintw(player.y, player.x, "\U0001FBC5");
@@ -3092,11 +3103,12 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
 
         mvprintw(LINES - 1, 96, "%d", gold);
         mvprintw(LINES - 1, 75, "%2d", strength);
-        mvprintw(LINES - 1, 56, "%2d", player.hits);
+        mvprintw(LINES - 1, 55, "%3d", player.hits);
         mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
 
-        mvprintw(LINES - 2, 0, "%d %d %d %d %d", backpack[0], backpack[1], backpack[2], backpack[3], backpack[4]);
-        mvprintw(LINES - 3, 0, "%d %d %d %d %d", enemies[0].hits, enemies[1].hits, enemies[2].hits, enemies[3].hits, enemies[4].hits);
+        // mvprintw(LINES - 2, 0, "%d %d %d %d %d", backpack[0], backpack[1], backpack[2], backpack[3], backpack[4]);
+        // mvprintw(LINES - 3, 0, "%d %d %d %d %d", enemies[0].hits, enemies[1].hits, enemies[2].hits, enemies[3].hits, enemies[4].hits);
+        // mvprintw(LINES - 4, 0, "%d %d %d %d %d", enemies[0].stunned, enemies[1].stunned, enemies[2].stunned, enemies[3].stunned, enemies[4].stunned);
 
         attron(COLOR_PAIR(5));
         mvprintw(player.y, player.x, "\U0001FBC5");
@@ -3462,13 +3474,15 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                     mvprintw(0, 0, "                           ");
                 }
                 else{
+                    int index = 0;
                     int dir = getch();
                     int displacement = 0, wand_x = player.x, wand_y = player.y;
                     if(dir == KEY_RIGHT){
                         while(check_movement(2, floor_num, wand_x + 1, wand_y) && (displacement < 10)){
                             wand_x++;
                             displacement++;
-                            if(enemy_hit_check(wand_x, wand_y, 15) == 1){
+                            index = enemy_hit_check(wand_x, wand_y, 15);
+                            if(index != 0){
                                 break;
                             }
                         }
@@ -3477,7 +3491,8 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                         while(check_movement(2, floor_num, wand_x - 1, wand_y) && (displacement < 10)){
                             wand_x--;
                             displacement++;
-                            if(enemy_hit_check(wand_x, wand_y, 15) == 1){
+                            index = enemy_hit_check(wand_x, wand_y, 15);
+                            if(index != 0){
                                 break;
                             }
                         }
@@ -3486,7 +3501,8 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                         while(check_movement(2, floor_num, wand_x, wand_y + 1) && (displacement < 10)){
                             wand_y++;
                             displacement++;
-                            if(enemy_hit_check(wand_x, wand_y, 15) == 1){
+                            index = enemy_hit_check(wand_x, wand_y, 15);
+                            if(index != 0){
                                 break;
                             }
                         }
@@ -3495,17 +3511,24 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                         while(check_movement(2, floor_num, wand_x, wand_y - 1) && (displacement < 10)){
                             wand_y--;
                             displacement++;
-                            if(enemy_hit_check(wand_x, wand_y, 15) == 1){
+                            index = enemy_hit_check(wand_x, wand_y, 15);
+                            if(index != 0){
                                 break;
                             }
                         }
                     }
-                    if(enemy_hit_check(wand_x, wand_y, 15) == 0){
+                    index = enemy_hit_check(wand_x, wand_y, 15);
+                    if(index == 0){
                         map[wand_y][wand_x].ch = 'w';
                         map[wand_y][wand_x].color_pair = 16;
                         attron(COLOR_PAIR(16));
                         mvprintw(wand_y, wand_x, "w");
                         attroff(COLOR_PAIR(16));
+                    }
+                    else{
+                        mvprintw(1, 1, "YOU HIT %s with a wand", enemy_names[index - 1]);
+                        getch();
+                        enemies[index - 1].stunned = 1;
                     }
                     backpack[2]--;
                 }
@@ -3801,8 +3824,8 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         prev_room = current_room;
         if(rooms[current_room].theme == 3){
             attron(COLOR_PAIR(23));
-            for(int delta_x = -1; delta_x <= 1; delta_x++){
-                for(int delta_y = -1; delta_y <= 1; delta_y++){
+            for(int delta_x = -2; delta_x <= 2; delta_x++){
+                for(int delta_y = -2; delta_y <= 2; delta_y++){
                     int x = player.x + delta_x;
                     int y = player.y + delta_y;
                     if(map[y][x].color_pair != 0){
@@ -3867,7 +3890,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         }
 
         for(int i = 0; i < 5; i++){
-            if((find_room(enemies[i].x, enemies[i].y) == current_room) || (i == 3 && snake_check == 1)){
+            if(((find_room(enemies[i].x, enemies[i].y) == current_room) || (i == 3 && snake_check == 1)) && (enemies[i].stunned == 0)){
                 enemy_follow(floor_num, i);
                 enemies[i].under.ch = mvinch(enemies[i].y, enemies[i].x) & A_CHARTEXT;
                 enemies[i].under.color_pair = PAIR_NUMBER(mvinch(enemies[i].y, enemies[i].x) & A_COLOR);
@@ -4189,7 +4212,7 @@ void play(char *username, char color, char difficulty, int song){
             continue;
         }
     }
-
+    backpack[2] = 10;
     fclose(file);
     char track_name[15];
 

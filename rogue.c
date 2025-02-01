@@ -21,8 +21,6 @@
 int main(){
     setlocale(LC_ALL, "");
     initscr();
-    clear();
-
     start_color();
     init_color(COLOR_DARK_GOLD, 700, 500, 100);
     init_color(COLOR_DARK_SILVER, 350, 350, 350);
