@@ -3905,6 +3905,204 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     endwin();
 }
 
+// void save_floor_map(char* filename, int floor_num){
+//     FILE *file = fopen(filename, "r+");
+
+//     fseek(file, 0, SEEK_END);
+//     long file_size = ftell(file);
+//     fseek(file, 0, SEEK_SET);
+//     char *data = malloc(file_size + 1);
+//     fread(data, 1, file_size, file);
+//     data[file_size] = '\0';
+
+//     char search_str[30];
+//     snprintf(search_str, sizeof(search_str), "Room Count%d:", floor_num);
+//     char *room_count_ptr = strstr(data, search_str);
+
+//     char next_floor_search_str[30];
+//     snprintf(next_floor_search_str, sizeof(next_floor_search_str), "Room Count%d:", floor_num + 1);
+//     char *next_floor_ptr = strstr(data, next_floor_search_str);
+
+//     char *part1;
+//     char *part2;
+
+//     if(room_count_ptr){
+//         long diff1 = room_count_ptr - data;
+//         part1 = malloc(diff1 + 1);
+//         strncpy(part1, data, diff1);
+//         part1[diff1] = '\0';
+
+//         if(next_floor_ptr){
+//             part2 = strdup(next_floor_ptr);
+//         }
+//         else{
+//             part2 = "";
+//         }
+//     }
+//     else{
+//         part1 = strdup(data);
+//         part2 = "";
+//     }
+
+//     char new_text[10000] = "";
+//     snprintf(new_text, sizeof(new_text), "Room Count%d: %d\nMap%d:\n", floor_num, room_count, floor_num);
+
+//     for(int y = 0; y < LINES; y++){
+//         for(int x = 0; x < COLS; x++){
+//             char ch = map[y][x].ch;
+//             if((ch != '#') && (ch != '_') && (ch != '|') && (ch != '+') && (ch != '=') && (ch != ' ')){
+//                 ch = '.';
+//             }
+//             if(ch == '#'){
+//                 if(map[y][x].color_pair != 20){
+//                     ch = '!';
+//                 }
+//             }
+//             for(int i = 0; i < room_count; i++){
+//                 if(rooms[i].explored == 1 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
+//                     if(rooms[i].theme == 1){
+//                         ch = 'R';
+//                     }
+//                     if(rooms[i].theme == 2){
+//                         ch = 'E';
+//                     }
+//                 }
+//                 else if(rooms[i].explored == 0 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
+//                     if(rooms[i].theme == 1){
+//                         ch = 'r';
+//                     }
+//                     if(rooms[i].theme == 2){
+//                         ch = 'e';
+//                     }
+//                     if(rooms[i].theme == 3){
+//                         ch = 'n';
+//                     }
+//                 }
+//             }
+//             char ch_str[2];
+//             snprintf(ch_str, sizeof(ch_str), "%c", ch);
+//             strcat(new_text, ch_str);
+//         }
+//         strcat(new_text, "\n");
+//     }
+
+//     char *final_data = malloc(strlen(part1) + strlen(new_text) + strlen(part2) + 1);
+//     strcpy(final_data, part1);
+//     strcat(final_data, new_text);
+//     strcat(final_data, part2);
+
+//     freopen(filename, "w", file);
+//     fputs(final_data, file);
+
+//     free(data);
+//     free(part1);
+//     free(part2);
+//     free(final_data);
+//     fclose(file);
+// }
+
+// void save_game(char* filename, int floor_num){
+//     FILE *file = fopen(filename, "r+");
+
+//     fseek(file, 0, SEEK_END);
+//     long file_size = ftell(file);
+//     fseek(file, 0, SEEK_SET);
+//     char *data = malloc(file_size + 1);
+//     fread(data, 1, file_size, file);
+//     data[file_size] = '\0';
+
+//     char temp_string1[50];
+//     sprintf(temp_string1, "Room Count%d: ", floor_num + 1);
+//     char *room_count2_ptr = strstr(data, temp_string1);
+//     char *part1;
+//     char *part2;
+
+//     if(room_count2_ptr){
+//         long diff = room_count2_ptr - data;
+//         part1 = malloc(diff + 1);
+//         strncpy(part1, data, diff);
+//         part1[diff] = '\0';
+//         part2 = strdup(room_count2_ptr);
+//     }
+//     else{
+//         part1 = strdup(data);
+//         part2 = "";
+//     }
+
+//     int previous_score, previous_gold, games_played;
+//     long int first_time;
+//     int hits;
+//     sscanf(part1, "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\n", &first_time, &previous_score, &previous_gold, &hits, &games_played);
+
+//     char new_text[10000];
+//     snprintf(new_text, sizeof(new_text), "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, player.hits, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
+
+//     char temp_string2[50];
+//     sprintf(temp_string2, "Room Count%d: ", floor_num);
+//     strcat(new_text, temp_string2);
+
+//     char room_count_str[10];
+//     snprintf(room_count_str, sizeof(room_count_str), "%d\n", room_count);
+//     strcat(new_text, room_count_str);
+//     char temp_string3[50];
+//     sprintf(temp_string3, "Map%d:\n", floor_num);
+//     strcat(new_text, temp_string3);
+
+
+//     for(int y = 0; y < LINES; y++){
+//         for(int x = 0; x < COLS; x++){
+//             char ch = map[y][x].ch;
+//             if((ch != '#') && (ch != '_') && (ch != '|') && (ch != '+') && (ch != '=') && (ch != ' ')){
+//                 ch = '.';
+//             }
+//             if(ch == '#'){
+//                 if(map[y][x].color_pair != 20){
+//                     ch = '!';
+//                 }
+//             }
+//             for(int i = 0; i < room_count; i++){
+//                 if(rooms[i].explored == 1 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
+//                     if(rooms[i].theme == 1){
+//                         ch = 'R';
+//                     }
+//                     if(rooms[i].theme == 2){
+//                         ch = 'E';
+//                     }
+//                 }
+//                 else if(rooms[i].explored == 0 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
+//                     if(rooms[i].theme == 1){
+//                         ch = 'r';
+//                     }
+//                     if(rooms[i].theme == 2){
+//                         ch = 'e';
+//                     }
+//                     if(rooms[i].theme == 3){
+//                         ch = 'n';
+//                     }
+//                 }
+//             }
+//             char ch_str[2];
+//             snprintf(ch_str, sizeof(ch_str), "%c", ch);
+//             strcat(new_text, ch_str);
+//         }
+//         strcat(new_text, "\n");
+//     }
+
+//     char *final_data = malloc(strlen(new_text) + strlen(part2) + 1);
+//     strcpy(final_data, new_text);
+//     strcat(final_data, part2);
+
+//     freopen(NULL, "w", file);
+//     fputs(final_data, file);
+
+//     free(data);
+//     free(part1);
+//     free(part2);
+//     free(final_data);
+//     fclose(file);
+// }
+
+
 void save_floor_map(char* filename, int floor_num){
     FILE *file = fopen(filename, "r+");
 
@@ -4033,6 +4231,7 @@ void save_game(char* filename, int floor_num){
     long int first_time;
     int hits;
     sscanf(part1, "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\n", &first_time, &previous_score, &previous_gold, &hits, &games_played);
+    games_played += 1;
 
     char new_text[10000];
     snprintf(new_text, sizeof(new_text), "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, player.hits, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
@@ -4102,7 +4301,7 @@ void save_game(char* filename, int floor_num){
     fclose(file);
 }
 
-void save_finished_game(char *filename){
+void save_finished_game(char* filename, int floor_num){
     FILE *file = fopen(filename, "r+");
 
     fseek(file, 0, SEEK_END);
@@ -4113,27 +4312,93 @@ void save_finished_game(char *filename){
     data[file_size] = '\0';
 
     char temp_string1[50];
+    sprintf(temp_string1, "Room Count%d: ", floor_num + 1);
+    char *room_count2_ptr = strstr(data, temp_string1);
     char *part1;
-    part1 = strdup(data);
+    char *part2;
+
+    if(room_count2_ptr){
+        long diff = room_count2_ptr - data;
+        part1 = malloc(diff + 1);
+        strncpy(part1, data, diff);
+        part1[diff] = '\0';
+        part2 = strdup(room_count2_ptr);
+    }
+    else{
+        part1 = strdup(data);
+        part2 = "";
+    }
 
     int previous_score, previous_gold, games_played;
     long int first_time;
     int hits;
     sscanf(part1, "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\n", &first_time, &previous_score, &previous_gold, &hits, &games_played);
-    games_played++;
+    games_played += 1;
 
     char new_text[10000];
-    int floor_num = 4;
-    snprintf(new_text, sizeof(new_text), "Game Finished: 1\nTime: %ld\nScore: %d\nGold: %d\nGames Played: %d", start_time, score, gold, games_played);
+    snprintf(new_text, sizeof(new_text), "Game Finished: 1\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, player.hits, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
 
-    char *final_data = malloc(strlen(new_text) + 1);
+    char temp_string2[50];
+    sprintf(temp_string2, "Room Count%d: ", floor_num);
+    strcat(new_text, temp_string2);
+
+    char room_count_str[10];
+    snprintf(room_count_str, sizeof(room_count_str), "%d\n", room_count);
+    strcat(new_text, room_count_str);
+    char temp_string3[50];
+    sprintf(temp_string3, "Map%d:\n", floor_num);
+    strcat(new_text, temp_string3);
+
+
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
+            char ch = map[y][x].ch;
+            if((ch != '#') && (ch != '_') && (ch != '|') && (ch != '+') && (ch != '=') && (ch != ' ')){
+                ch = '.';
+            }
+            if(ch == '#'){
+                if(map[y][x].color_pair != 20){
+                    ch = '!';
+                }
+            }
+            for(int i = 0; i < room_count; i++){
+                if(rooms[i].explored == 1 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
+                    if(rooms[i].theme == 1){
+                        ch = 'R';
+                    }
+                    if(rooms[i].theme == 2){
+                        ch = 'E';
+                    }
+                }
+                else if(rooms[i].explored == 0 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
+                    if(rooms[i].theme == 1){
+                        ch = 'r';
+                    }
+                    if(rooms[i].theme == 2){
+                        ch = 'e';
+                    }
+                    if(rooms[i].theme == 3){
+                        ch = 'n';
+                    }
+                }
+            }
+            char ch_str[2];
+            snprintf(ch_str, sizeof(ch_str), "%c", ch);
+            strcat(new_text, ch_str);
+        }
+        strcat(new_text, "\n");
+    }
+
+    char *final_data = malloc(strlen(new_text) + strlen(part2) + 1);
     strcpy(final_data, new_text);
+    strcat(final_data, part2);
 
     freopen(NULL, "w", file);
     fputs(final_data, file);
 
     free(data);
     free(part1);
+    free(part2);
     free(final_data);
     fclose(file);
 }
@@ -4230,7 +4495,7 @@ void play(char *username, char color, char difficulty, int song){
         save_floor_map(filename, abs(temp));
         start_check = 0;
         clear();
-        save_finished_game(filename);
+        save_finished_game(filename, floor_num);
     }
     
     if(floor_num == -4){
@@ -4242,7 +4507,7 @@ void play(char *username, char color, char difficulty, int song){
         mvprintw(LINES / 2 + 2, (COLS - 28) / 2, "Press Any Key to Continue...");
         getch();
         clear();
-        save_finished_game(filename);
+        save_finished_game(filename, floor_num);
         return;
     }
     if(floor_num == -6){
