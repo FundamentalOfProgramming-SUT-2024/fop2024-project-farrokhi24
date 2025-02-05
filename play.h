@@ -4495,7 +4495,6 @@ void play(char *username, char color, char difficulty, int song){
         save_floor_map(filename, abs(temp));
         start_check = 0;
         clear();
-        save_finished_game(filename, floor_num);
     }
     
     if(floor_num == -4){
