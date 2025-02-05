@@ -60,7 +60,6 @@ struct player{
 
 struct player player;
 struct player enemies[5];
-struct player enemies_2[5];
 
 void print_map_with_colors(int floor_num);
 int find_room(int x, int y);
@@ -952,7 +951,7 @@ void food_list(int *strength){
                 if(food[1] > 0){
                     food[1]--;
                     (*strength)++;
-                    //Add Power
+                    damage_co = 2;
                 }
                 else{
                     attron(COLOR_PAIR(1));
@@ -1993,48 +1992,12 @@ void enemy_follow_treasure_room(int floor_num, int i) {
     mvprintw(prev_y, prev_x, ".");
 }
 
-void enemy_2_follow(int floor_num, int i) {
-    if((abs(enemies_2[i].x - player.x) <= 1) && (abs(enemies_2[i].y - player.y) <= 1)) {
-        if(enemies_2[i].alive == 1){
-            player.hits -= enemies[i].damage;
-            mvprintw(0, 0, "The %s Took a Hit on You!", enemy_names[i]);
-            getch();
-            mvprintw(0, 0, "                                             ");
-            if(player.hits < 0){
-                player.hits = 0;
-            }
-        }
-        return;
-    }
-
-    int prev_x = enemies_2[i].x;
-    int prev_y = enemies_2[i].y;
-
-    if((enemies_2[i].x < player.x) && (check_movement(1, floor_num, enemies_2[i].x + 1, enemies_2[i].y) == 1) && (enemies_2[i].x + 1 != player.x)) {
-        enemies_2[i].x++;
-    }
-    else if((enemies_2[i].x > player.x) && (check_movement(1, floor_num, enemies_2[i].x - 1, enemies_2[i].y) == 1) && (enemies_2[i].x - 1 != player.x)) {
-        enemies_2[i].x--;
-    }
-    else if((enemies_2[i].y < player.y) && (check_movement(1, floor_num, enemies_2[i].x, enemies_2[i].y + 1) == 1) && (enemies_2[i].y + 1 != player.x)) {
-        enemies_2[i].y++;
-    }
-    else if((enemies_2[i].y > player.y) && (check_movement(1, floor_num, enemies_2[i].x, enemies_2[i].y - 1) == 1) && (enemies_2[i].y - 1 != player.x)) {
-        enemies_2[i].y--;
-    }
-
-    mvprintw(prev_y, prev_x, ".");
-}
-
 void print_treasure_room_enemies(){
     attron(COLOR_PAIR(21));
     char string[6] = "DFGSU";
     for(int i = 0; i < 5; i++){
         if(enemies[i].alive == 1){
             mvprintw(enemies[i].y, enemies[i].x, "%c", string[i]);
-        }
-        if(enemies_2[i].alive == 1){
-            mvprintw(enemies_2[i].y, enemies_2[i].x, "%c", string[i]);
         }
     }
 }
@@ -2049,7 +2012,8 @@ int enemy_hit_check(int x, int y, int damage){
             mvprintw(0, 0, "You Have Defeated the Demon.");
         }
         else{
-            mvprintw(0, 0, "You Scored an Excellent hit on the Demon.");
+            mvprintw(1, 0, "%d", damage_co);
+            mvprintw(0, 0, "You Took an Excellent hit on the Demon.");
         }
         getch();
         mvprintw(0, 0, "                                                   ");
@@ -2062,7 +2026,8 @@ int enemy_hit_check(int x, int y, int damage){
             mvprintw(0, 0, "You Have Defeated the Fire Breathing Monster.");
         }
         else{
-            mvprintw(0, 0, "You Scored an Excellent hit on the Fire Breathing Monster.");
+            mvprintw(1, 0, "%d", damage_co);
+            mvprintw(0, 0, "You Took an Excellent hit on the Fire Breathing Monster.");
         }
         getch();
         mvprintw(0, 0, "                                                          ");
@@ -2075,7 +2040,8 @@ int enemy_hit_check(int x, int y, int damage){
             mvprintw(0, 0, "You Have Defeated the Giant.");
         }
         else{
-            mvprintw(0, 0, "You Scored an Excellent hit on the Giant.");
+            mvprintw(1, 0, "%d", damage_co);
+            mvprintw(0, 0, "You Took an Excellent hit on the Giant.");
         }
         getch();
         mvprintw(0, 0, "                                         ");
@@ -2088,7 +2054,8 @@ int enemy_hit_check(int x, int y, int damage){
             mvprintw(0, 0, "You Have Defeated the Snake.");
         }
         else{
-            mvprintw(0, 0, "You Scored an Excellent hit on the Snake.");
+            mvprintw(1, 0, "%d", damage_co);
+        mvprintw(0, 0, "You Took an Excellent hit on the Snake.");
         }
         getch();
         mvprintw(0, 0, "                                         ");
@@ -2101,7 +2068,8 @@ int enemy_hit_check(int x, int y, int damage){
             mvprintw(0, 0, "You Have Defeated the Undead.");
         }
         else{
-            mvprintw(0, 0, "You Scored an Excellent hit on the Undead.");
+            mvprintw(1, 0, "%d", damage_co);
+            mvprintw(0, 0, "You Took an Excellent hit on the Undead.");
         }
         getch();
         mvprintw(0, 0, "                                           ");
@@ -2118,10 +2086,10 @@ int treasure_room(){
     player.x = COLS / 2;
     player.y = LINES / 2 - 2;
     player.under.ch = '.';
-    int x_start = 4;
-    int y_start = 3;
-    int width = COLS - 10;
-    int height = LINES - 8;
+    int x_start = COLS / 4;
+    int y_start = LINES / 4;
+    int width = COLS / 2;
+    int height = LINES / 2;
     attron(COLOR_PAIR(9));
     mvprintw(y_start, x_start, "_");
     for(int j = 1; j <= width; j++){
@@ -2205,16 +2173,6 @@ int treasure_room(){
         enemies[i].stunned = 0;
         enemies[i].under.ch = '.';
         enemies[i].under.color_pair = 9;
-        do{
-            enemies_2[i].x = rand_with_range(10, COLS - 10);
-            enemies_2[i].y = rand_with_range(10, LINES - 10);
-            chtype ch = mvinch(enemies_2[i].y, enemies_2[i].x);
-            character = ch & A_CHARTEXT;
-        } while(character != '.');
-        enemies_2[i].hits = enemy_hits[i];
-        enemies_2[i].alive = 1;
-        enemies_2[i].under.ch = '.';
-        enemies_2[i].under.color_pair = 9;
     }
 
     int floor_num = 4;
@@ -2636,15 +2594,6 @@ int treasure_room(){
             attron(COLOR_PAIR(9));
             mvprintw(enemies[i].y, enemies[i].x, ".");
             attroff(COLOR_PAIR(enemies[i].under.color_pair));
-        }
-        for(int i = 0; i < 5; i++){
-            enemy_2_follow(floor_num, i);
-            enemies_2[i].under.ch = mvinch(enemies_2[i].y, enemies_2[i].x) & A_CHARTEXT;
-            enemies_2[i].under.color_pair = PAIR_NUMBER(mvinch(enemies_2[i].y, enemies_2[i].x) & A_COLOR);
-            attron(COLOR_PAIR(enemies_2[i].under.color_pair));
-            attron(COLOR_PAIR(9));
-            mvprintw(enemies_2[i].y, enemies_2[i].x, ".");
-            attroff(COLOR_PAIR(enemies_2[i].under.color_pair));
         }
         player.under.ch = mvinch(player.y, player.x) & A_CHARTEXT;
         player.under.color_pair = PAIR_NUMBER(mvinch(player.y, player.x) & A_COLOR);
@@ -3526,7 +3475,6 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                         attroff(COLOR_PAIR(16));
                     }
                     else{
-                        mvprintw(1, 1, "YOU HIT %s with a wand", enemy_names[index - 1]);
                         getch();
                         enemies[index - 1].stunned = 1;
                     }
@@ -3936,15 +3884,15 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
 //             part2 = strdup(next_floor_ptr);
 //         }
 //         else{
-//             part2 = "";
+//             part2 = "%d", damage_co;
 //         }
 //     }
 //     else{
 //         part1 = strdup(data);
-//         part2 = "";
+//         part2 = "%d", damage_co;
 //     }
 
-//     char new_text[10000] = "";
+//     char new_text[10000] = "%d", damage_co;
 //     snprintf(new_text, sizeof(new_text), "Room Count%d: %d\nMap%d:\n", floor_num, room_count, floor_num);
 
 //     for(int y = 0; y < LINES; y++){
@@ -4026,7 +3974,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
 //     }
 //     else{
 //         part1 = strdup(data);
-//         part2 = "";
+//         part2 = "%d", damage_co;
 //     }
 
 //     int previous_score, previous_gold, games_played;
@@ -4134,15 +4082,15 @@ void save_floor_map(char* filename, int floor_num){
             part2 = strdup(next_floor_ptr);
         }
         else{
-            part2 = "";
+            part2 = "%d", damage_co;
         }
     }
     else{
         part1 = strdup(data);
-        part2 = "";
+        part2 = "%d", damage_co;
     }
 
-    char new_text[10000] = "";
+    char new_text[10000] = "%d", damage_co;
     snprintf(new_text, sizeof(new_text), "Room Count%d: %d\nMap%d:\n", floor_num, room_count, floor_num);
 
     for(int y = 0; y < LINES; y++){
@@ -4224,7 +4172,7 @@ void save_game(char* filename, int floor_num){
     }
     else{
         part1 = strdup(data);
-        part2 = "";
+        part2 = "%d", damage_co;
     }
 
     int previous_score, previous_gold, games_played;
@@ -4235,108 +4183,6 @@ void save_game(char* filename, int floor_num){
 
     char new_text[10000];
     snprintf(new_text, sizeof(new_text), "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, player.hits, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
-
-    char temp_string2[50];
-    sprintf(temp_string2, "Room Count%d: ", floor_num);
-    strcat(new_text, temp_string2);
-
-    char room_count_str[10];
-    snprintf(room_count_str, sizeof(room_count_str), "%d\n", room_count);
-    strcat(new_text, room_count_str);
-    char temp_string3[50];
-    sprintf(temp_string3, "Map%d:\n", floor_num);
-    strcat(new_text, temp_string3);
-
-
-    for(int y = 0; y < LINES; y++){
-        for(int x = 0; x < COLS; x++){
-            char ch = map[y][x].ch;
-            if((ch != '#') && (ch != '_') && (ch != '|') && (ch != '+') && (ch != '=') && (ch != ' ')){
-                ch = '.';
-            }
-            if(ch == '#'){
-                if(map[y][x].color_pair != 20){
-                    ch = '!';
-                }
-            }
-            for(int i = 0; i < room_count; i++){
-                if(rooms[i].explored == 1 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
-                    if(rooms[i].theme == 1){
-                        ch = 'R';
-                    }
-                    if(rooms[i].theme == 2){
-                        ch = 'E';
-                    }
-                }
-                else if(rooms[i].explored == 0 && rooms[i].y_top_left == y && rooms[i].x_top_left == x){
-                    if(rooms[i].theme == 1){
-                        ch = 'r';
-                    }
-                    if(rooms[i].theme == 2){
-                        ch = 'e';
-                    }
-                    if(rooms[i].theme == 3){
-                        ch = 'n';
-                    }
-                }
-            }
-            char ch_str[2];
-            snprintf(ch_str, sizeof(ch_str), "%c", ch);
-            strcat(new_text, ch_str);
-        }
-        strcat(new_text, "\n");
-    }
-
-    char *final_data = malloc(strlen(new_text) + strlen(part2) + 1);
-    strcpy(final_data, new_text);
-    strcat(final_data, part2);
-
-    freopen(NULL, "w", file);
-    fputs(final_data, file);
-
-    free(data);
-    free(part1);
-    free(part2);
-    free(final_data);
-    fclose(file);
-}
-
-void save_finished_game(char* filename, int floor_num){
-    FILE *file = fopen(filename, "r+");
-
-    fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    char *data = malloc(file_size + 1);
-    fread(data, 1, file_size, file);
-    data[file_size] = '\0';
-
-    char temp_string1[50];
-    sprintf(temp_string1, "Room Count%d: ", floor_num + 1);
-    char *room_count2_ptr = strstr(data, temp_string1);
-    char *part1;
-    char *part2;
-
-    if(room_count2_ptr){
-        long diff = room_count2_ptr - data;
-        part1 = malloc(diff + 1);
-        strncpy(part1, data, diff);
-        part1[diff] = '\0';
-        part2 = strdup(room_count2_ptr);
-    }
-    else{
-        part1 = strdup(data);
-        part2 = "";
-    }
-
-    int previous_score, previous_gold, games_played;
-    long int first_time;
-    int hits;
-    sscanf(part1, "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\n", &first_time, &previous_score, &previous_gold, &hits, &games_played);
-    games_played += 1;
-
-    char new_text[10000];
-    snprintf(new_text, sizeof(new_text), "Game Finished: 1\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, player.hits, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
 
     char temp_string2[50];
     sprintf(temp_string2, "Room Count%d: ", floor_num);
@@ -4506,7 +4352,7 @@ void play(char *username, char color, char difficulty, int song){
         mvprintw(LINES / 2 + 2, (COLS - 28) / 2, "Press Any Key to Continue...");
         getch();
         clear();
-        save_finished_game(filename, floor_num);
+        //save_floor_map(filename, floor_num);
         return;
     }
     if(floor_num == -6){
