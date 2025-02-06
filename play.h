@@ -777,7 +777,7 @@ int check_trap(int floor_num, int x, int y, struct point *traps, int trap_count,
             getch();
             mvprintw(0, 0, "                           ");
             if(!in_treasure_room){
-                //battle_room(floor_num);
+                battle_room(floor_num);
             }
             return i;
         }
@@ -839,6 +839,7 @@ void display_door_password(int password, int floor_num){
 }
 
 void food_list(int *strength){
+    attron(COLOR_PAIR(21));
     typedef struct{
         char ch;
         int color_pair;
@@ -1000,6 +1001,7 @@ void food_list(int *strength){
 }
 
 void weapon_list(){
+    attron(COLOR_PAIR(21));
     character map[LINES][COLS];
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
@@ -1128,6 +1130,7 @@ void weapon_list(){
 }
 
 void spell_list(){
+    attron(COLOR_PAIR(21));
     character map[LINES][COLS];
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
@@ -2082,7 +2085,7 @@ int enemy_hit_check(int x, int y, int damage){
     }
     return 0;
 }
-int print_treasure_room(character treasure_room_map[LINES][COLS]){
+void print_treasure_room(character treasure_room_map[LINES][COLS]){
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
             attron(COLOR_PAIR(treasure_room_map[y][x].color_pair));
@@ -2090,7 +2093,7 @@ int print_treasure_room(character treasure_room_map[LINES][COLS]){
             attroff(COLOR_PAIR(treasure_room_map[y][x].color_pair));
         }
     }
-    return 0;
+    attroff(COLOR_PAIR(9));
 }
 
 int treasure_room(){
@@ -2142,13 +2145,13 @@ int treasure_room(){
             if(rand() % 10 == 0){
                 attron(COLOR_PAIR(15));
                 mvprintw(y, x, "x");
-                map[y][x].color_pair = 15;
+                treasure_room_map[y][x].color_pair = 15;
                 attroff(COLOR_PAIR(15));
             }
             else{
                 attron(COLOR_PAIR(7));
                 mvprintw(y, x, "*");
-                map[y][x].color_pair = 7;
+                treasure_room_map[y][x].color_pair = 7;
                 attroff(COLOR_PAIR(7));
             }
             i++;
@@ -2472,8 +2475,8 @@ int treasure_room(){
                         }
                     }
                     if(enemy_hit_check(dagger_x, dagger_y, 12) == 0){
-                        map[dagger_y][dagger_x].ch = 'q';
-                        map[dagger_y][dagger_x].color_pair = 16;
+                        treasure_room_map[dagger_y][dagger_x].ch = 'q';
+                        treasure_room_map[dagger_y][dagger_x].color_pair = 16;
                         attron(COLOR_PAIR(16));
                         mvprintw(dagger_y, dagger_x, "q");
                         attroff(COLOR_PAIR(16));
@@ -2528,11 +2531,12 @@ int treasure_room(){
                     }
                     int index = enemy_hit_check(wand_x, wand_y, 15);
                     if(index == 0){
-                        map[wand_y][wand_x].ch = 'w';
-                        map[wand_y][wand_x].color_pair = 16;
+                        treasure_room_map[wand_y][wand_x].ch = 'w';
+                        treasure_room_map[wand_y][wand_x].color_pair = 16;
                         attron(COLOR_PAIR(16));
                         mvprintw(wand_y, wand_x, "w");
                         attroff(COLOR_PAIR(16));
+
                     }
                     else{
                         enemies[index - 1].stunned = 1;
@@ -2586,8 +2590,8 @@ int treasure_room(){
                         }
                     }
                     if(enemy_hit_check(wand_x, wand_y, 5) == 0){
-                        map[wand_y][wand_x].ch = 'a';
-                        map[wand_y][wand_x].color_pair = 16;
+                        treasure_room_map[wand_y][wand_x].ch = 'a';
+                        treasure_room_map[wand_y][wand_x].color_pair = 16;
                         attron(COLOR_PAIR(16));
                         mvprintw(wand_y, wand_x, "a");
                         attroff(COLOR_PAIR(16));
@@ -2652,6 +2656,38 @@ int treasure_room(){
             getch();
             mvprintw(0, 0, "               ");
         }
+        if(player.under.ch == 'q' && g_check == 0){
+            player.under.ch = '.';
+            treasure_room_map[player.y][player.x].ch = '.';
+            treasure_room_map[player.y][player.x].color_pair = 9;
+            backpack[1]++;
+            mvprintw(0, 0, "You Found a Dagger.");
+            getch();
+            mvprintw(0, 0, "                   ");
+        }
+
+
+        if(player.under.ch == 'w' && g_check == 0){
+            player.under.ch = '.';
+            treasure_room_map[player.y][player.x].ch = '.';
+            treasure_room_map[player.y][player.x].color_pair = 9;
+            backpack[2]++;
+            mvprintw(0, 0, "You Found a Magic Wand.");
+            getch();
+            mvprintw(0, 0, "                       ");
+        }
+
+
+        if(player.under.ch == 'a' && g_check == 0){
+            player.under.ch = '.';
+            treasure_room_map[player.y][player.x].ch = '.';
+            treasure_room_map[player.y][player.x].color_pair = 9;
+            backpack[3]++;
+            mvprintw(0, 0, "You Found a Normal Arrow.");
+            getch();
+            mvprintw(0, 0, "                         ");
+        }
+
         int trap_num = check_trap(floor_num, player.x, player.y, traps, trap_count, &strength);
         if(trap_num != -1){
             player.under.ch = '^';
@@ -3120,7 +3156,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     generate_food();
     generate_spell();
     generate_ancient_key();
-    if(floor_num == 1){
+    if(floor_num == 4){
         generate_treasure();
     }
     for(int y = 0; y < LINES; y++){
@@ -3213,6 +3249,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     print_full_map(floor_num);
     print_map_with_colors(floor_num);
     int current_room, prev_room = -1;
+    heal_time = time(NULL);
     while(1){
         current_time = time(NULL);
         
@@ -3228,14 +3265,15 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
         if(hunger < 20){
             hunger_full = 0;
         }
-        if(hunger == 0){
-            heal_time = time(NULL);
+        if(hunger > 0){
+            heal_time = current_time;
         }
 
-        if(difftime(current_time, heal_time) >= (3 + 2 * d) / heal){
-            player.hits += 5;
+        //mvprintw(2, 2, "%lld", (long long int)difftime(current_time, heal_time));
+        if(difftime(current_time, heal_time) >= 5 / heal){
+            player.hits += 1;
             if(player.hits > 20){
-                player.hits = 20;
+                player.hits = 100;
             }
             heal_time = current_time;
         }
@@ -3255,6 +3293,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             damage_co = 1;
         }
 
+        //mvprintw(2, 2, "%lld %d", (long long int)difftime(current_time, double_heal_time), heal);
         if(difftime(current_time, double_heal_time) >= 10){
             heal = 1;
         }
