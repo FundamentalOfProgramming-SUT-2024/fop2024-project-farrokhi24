@@ -10,6 +10,7 @@ struct point{
     int x;
     int y;
     int full;
+    int revealed;
 };
 
 typedef struct{
@@ -38,6 +39,8 @@ struct password_door{
     long int time_unlocked;
 };
 
+int hidden_doors_count = 0;
+struct points hidden_doors[50];
 struct password_door password_doors[3];
 int password_doors_count = 3;
 int d;
@@ -3239,6 +3242,18 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
     }
 
     attroff(COLOR_PAIR(8));
+    
+    for(int y = 0; y < LINES; y++){
+        for(int x = 0; x < COLS; x++){
+            if((mvinch(y, x) & A_CHARTEXT) == '+' && rooms[find_room(x, y)].theme == 2){
+                hidden_doors[hidden_doors_count].x = x;
+                hidden_doors[hidden_doors_count].y = y;
+                hidden_doors[hidden_doors_count].revealed = 0;
+                mvprintw(y, x, "?");
+            }
+        }
+    }
+    getch();
 
     char previous_under = ' ';
     
