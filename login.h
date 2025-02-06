@@ -1,5 +1,12 @@
 #include <ncurses.h>
 #include <string.h>
+#include <sqlite3.h>
+
+void print_login_page(int highlight, char **options, char *username, char *password);
+void input_login_password(char *password, int max_length, int *exit_flag);
+int correct_info(sqlite3 *db, char *username, char *password);
+int recover_password(sqlite3 *db, char *email, char *password);
+char *login();
 
 void print_login_page(int highlight, char **options, char *username, char *password){
     int y =(LINES - 13) / 2;
@@ -64,46 +71,56 @@ void input_login_password(char *password, int max_length, int *exit_flag){
     echo();
 }
 
-int correct_info(char *username, char *password){
-    FILE *file = fopen("user_data.txt", "r");
-    if(file == NULL){
+int correct_info(sqlite3 *db, char *username, char *password){
+    char *sql = "SELECT Password FROM Users WHERE Username = ?;";
+    sqlite3_stmt *stmt;
+
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
         return 0;
     }
 
-    char line[60];
-    while(fgets(line, sizeof(line), file)){
-        char read_username[50], read_password[50];
-        sscanf(line, "Username: %s", read_username);
-        sscanf(line, "Password: %s", read_password);
-        if((strcmp(read_username, username) == 0) &&(strcmp(read_password, password) == 0)){
-            fclose(file);
+    sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW) {
+        const unsigned char *db_password = sqlite3_column_text(stmt, 0);
+        if (strcmp((const char *)db_password, password) == 0) {
+            sqlite3_finalize(stmt);
             return 1;
         }
     }
-    fclose(file);
+
+    sqlite3_finalize(stmt);
     return 0;
 }
 
-int recover_password(char *email, char *password){
-    FILE *file = fopen("user_data.txt", "r");
+int recover_password(sqlite3 *db, char *email, char *password){
+    char *sql = "SELECT Password FROM Users WHERE Email = ?;";
+    sqlite3_stmt *stmt;
 
-    char line[60];
-    while(fgets(line, sizeof(line), file)){
-        char read_email[50], read_password[50];
-        sscanf(line, "Email: %s", read_email);
-        fgets(line, sizeof(line), file);
-        sscanf(line, "Password: %s", read_password);
-        if(strcmp(read_email, email) == 0){
-            strcpy(password, read_password);
-            fclose(file);
-            return 1;
-        }
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return 0;
     }
-    fclose(file);
+
+    sqlite3_bind_text(stmt, 1, email, -1, SQLITE_STATIC);
+
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW) {
+        const unsigned char *db_password = sqlite3_column_text(stmt, 0);
+        strcpy(password, (const char *)db_password);
+        sqlite3_finalize(stmt);
+        return 1;
+    }
+
+    sqlite3_finalize(stmt);
     return 0;
 }
 
-char *login(){
+char *login() {
     int y =(LINES - 13) / 2;
     int x_labels =(COLS - 20) / 2;
     char username[50] = {0}, password[50] = {0}, email[50] = {0};
@@ -130,6 +147,16 @@ char *login(){
         highlight = 3;
     }
     curs_set(0);
+
+    sqlite3 *db;
+    int rc = sqlite3_open("users.db", &db);
+    if (rc != SQLITE_OK) {
+        attron(COLOR_PAIR(1));
+        mvprintw(0, 0, "Cannot open database: %s", sqlite3_errmsg(db));
+        attroff(COLOR_PAIR(1));
+        sqlite3_close(db);
+        return NULL;
+    }
 
     while(1){
         clear();
@@ -163,7 +190,7 @@ char *login(){
             }
         }
         else if((c == 10) &&(highlight == 3)){
-            if(!correct_info(username, password)){
+            if(!correct_info(db, username, password)){
                 invalid = 1;
             }
             else{
@@ -177,7 +204,7 @@ char *login(){
             clear();
             mvprintw(LINES / 2 - 3,(COLS - 30) / 2, "Enter Your Email: ");
             getstr(email);
-            if(recover_password(email, password)){
+            if(recover_password(db, email, password)){
                 mvprintw(LINES / 2 - 1,(COLS - 30) / 2, "Your Password is: %s", password);
             }
             else{
@@ -195,10 +222,13 @@ char *login(){
             break;
         }
         else if((c == 10) &&(highlight == 6)){
+            sqlite3_close(db);
             return NULL;
         }
         refresh();
     }
+
+    sqlite3_close(db);
 
     mvprintw(LINES / 2 + 1,(COLS - 30) / 2, "Press Any Key to Continue...");
     getch();

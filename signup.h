@@ -4,6 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sqlite3.h>
+
+void print_signup_page(int highlight, char **options, char *username, char *password, char *email, int password_generated);
+void input_password(char *password, int max_length, int *check);
+int duplicate_username(sqlite3 *db, char *username);
+int valid_password(char *password);
+int valid_email(char *email);
+void generate_password(char *password, int length);
 
 void print_signup_page(int highlight, char **options, char *username, char *password, char *email, int password_generated){
     int y = (LINES - 13) / 2;
@@ -95,20 +103,39 @@ void input_password(char *password, int max_length, int *check){
     echo();
 }
 
+void create_table(sqlite3 *db) {
+    char *err_msg = 0;
+    char *sql = "CREATE TABLE IF NOT EXISTS Users("  \
+                "Username TEXT PRIMARY KEY NOT NULL," \
+                "Password TEXT NOT NULL," \
+                "Email TEXT NOT NULL);";
 
-int duplicate_username(char *username){
-    FILE *file = fopen("user_data.txt", "r");
-
-    char line[60];
-    while(fgets(line, sizeof(line), file)){
-        char read_username[50];
-        sscanf(line, "Username: %s", read_username);
-        if(strcmp(read_username, username) == 0){
-            fclose(file);
-            return 1;
-        }
+    int rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "SQL error: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        sqlite3_close(db);
     }
-    fclose(file);
+}
+
+int duplicate_username(sqlite3 *db, char *username) {
+    char *sql = "SELECT Username FROM Users WHERE Username = ?;";
+    sqlite3_stmt *stmt;
+
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        return 1;
+    }
+
+    sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW) {
+        sqlite3_finalize(stmt);
+        return 1;
+    }
+
+    sqlite3_finalize(stmt);
     return 0;
 }
 
@@ -174,7 +201,7 @@ void generate_password(char *password, int length){
     } while(!valid_password(password));
 }
 
-void signup(){
+void signup() {
     start_color();
     init_pair(1, COLOR_RED, COLOR_BLACK);
     int y = (LINES - 13) / 2;
@@ -208,6 +235,18 @@ void signup(){
 
     move(y + 5, (COLS - 15) / 2 + strlen(options[2]));
     getstr(email);
+
+    sqlite3 *db;
+    int rc = sqlite3_open("users.db", &db);
+    if (rc != SQLITE_OK) {
+        attron(COLOR_PAIR(1));
+        mvprintw(0, 0, "Cannot open database: %s", sqlite3_errmsg(db));
+        attroff(COLOR_PAIR(1));
+        sqlite3_close(db);
+        return;
+    }
+
+    create_table(db); // Ensure the table is created
 
     while(1){
         clear();
@@ -271,7 +310,8 @@ void signup(){
                 if(strlen(username) == 0 || strlen(password) == 0 || strlen(email) == 0){
                     break;
                 }
-                if(duplicate_username(username)){
+
+                if(duplicate_username(db, username)){
                     attron(COLOR_PAIR(1));
                     mvprintw(0, 0, "Username Already Exists.");
                     attroff(COLOR_PAIR(1));
@@ -283,6 +323,7 @@ void signup(){
                     getstr(username);
                     break;
                 }
+
                 if(!valid_password(password)){
                     attron(COLOR_PAIR(1));
                     mvprintw(0, 0, "Password Should Have at Least 7 Characters, 1 Lowercase Character, 1 Uppercase Character and 1 Number.");
@@ -298,6 +339,7 @@ void signup(){
                     }
                     break;
                 }
+
                 if(!valid_email(email)){
                     attron(COLOR_PAIR(1));
                     mvprintw(0, 0, "Please Enter a Valid Email.");
@@ -310,10 +352,41 @@ void signup(){
                     getstr(email);
                     break;
                 }
+                
+                char *sql = "INSERT INTO Users (Username, Password, Email) VALUES (?, ?, ?);";
+                sqlite3_stmt *stmt;
+
+                rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+                if (rc != SQLITE_OK) {
+                    attron(COLOR_PAIR(1));
+                    mvprintw(0, 0, "Failed to prepare statement: %s", sqlite3_errmsg(db));
+                    attroff(COLOR_PAIR(1));
+                    sqlite3_close(db);
+                    return;
+                }
+
+                sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+                sqlite3_bind_text(stmt, 2, password, -1, SQLITE_STATIC);
+                sqlite3_bind_text(stmt, 3, email, -1, SQLITE_STATIC);
+
+                rc = sqlite3_step(stmt);
+                if (rc != SQLITE_DONE) {
+                    attron(COLOR_PAIR(1));
+                    mvprintw(0, 0, "Execution failed: %s", sqlite3_errmsg(db));
+                    attroff(COLOR_PAIR(1));
+                    sqlite3_finalize(stmt);
+                    sqlite3_close(db);
+                    return;
+                }
+
+                sqlite3_finalize(stmt);
+                sqlite3_close(db);
+
                 choice = 1;
                 break;
             }
             else if((c == 10) && (highlight == 6)){
+                sqlite3_close(db);
                 return;
             } 
             else{
@@ -330,12 +403,6 @@ void signup(){
 
     if(choice == 1){
         clear();
-        FILE *file = fopen("user_data.txt", "a");
-        fprintf(file, "Username: %s\n", username);
-        fprintf(file, "Password: %s\n", password);
-        fprintf(file, "Email: %s\n\n", email);
-        fclose(file);
-
         curs_set(0);
         mvprintw(LINES / 2 - 1, (COLS - 9 - strlen(username)) / 2, "Welcome, %s!", username);
         mvprintw(LINES / 2 + 1, (COLS - 24) / 2, "Press Any Key to Continue...");

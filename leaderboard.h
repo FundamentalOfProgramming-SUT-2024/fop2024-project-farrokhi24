@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <sqlite3.h>
 
 struct User{
     char username[50];
@@ -123,39 +124,92 @@ void print_options(int highlight){
     }
 }
 
-void read_all_users(struct User users[], int *user_count){
-    FILE *file = fopen("user_data.txt", "r");
+// void read_all_users(struct User users[], int *user_count){
+//     FILE *file = fopen("user_data.txt", "r");
 
-    char line[256];
-    int i = 0;
-    while(fgets(line, sizeof(line), file)){
-        if(sscanf(line, "Username: %49s", users[i].username) == 1){
-            char user_file_name[100];
-            snprintf(user_file_name, sizeof(user_file_name), "%s.txt", users[i].username);
-            FILE *user_file = fopen(user_file_name, "r");
-            if(user_file == NULL){
-                continue;
-            }
-            long int now = time(NULL);
-            char user_line[256];
-            while(fgets(user_line, sizeof(user_line), user_file)){
-                if(sscanf(user_line, "Score: %d", &users[i].score) == 1) continue;
-                if(sscanf(user_line, "Gold: %d", &users[i].gold) == 1) continue;
-                if(sscanf(user_line, "Games Played: %d", &users[i].games_played) == 1) continue;
-                long first_game_time;
-                if(sscanf(user_line, "Time: %ld", &first_game_time) == 1){
-                    users[i].experience = now - first_game_time;
-                }
-            }
+//     char line[256];
+//     int i = 0;
+//     while(fgets(line, sizeof(line), file)){
+//         if(sscanf(line, "Username: %49s", users[i].username) == 1){
+//             char user_file_name[100];
+//             snprintf(user_file_name, sizeof(user_file_name), "%s.txt", users[i].username);
+//             FILE *user_file = fopen(user_file_name, "r");
+//             if(user_file == NULL){
+//                 continue;
+//             }
+//             long int now = time(NULL);
+//             char user_line[256];
+//             while(fgets(user_line, sizeof(user_line), user_file)){
+//                 if(sscanf(user_line, "Score: %d", &users[i].score) == 1) continue;
+//                 if(sscanf(user_line, "Gold: %d", &users[i].gold) == 1) continue;
+//                 if(sscanf(user_line, "Games Played: %d", &users[i].games_played) == 1) continue;
+//                 long first_game_time;
+//                 if(sscanf(user_line, "Time: %ld", &first_game_time) == 1){
+//                     users[i].experience = now - first_game_time;
+//                 }
+//             }
 
-            fclose(user_file);
-            i++;
-        }
+//             fclose(user_file);
+//             i++;
+//         }
+//     }
+
+//     fclose(file);
+//     *user_count = i;
+// }
+
+void read_all_users(struct User users[], int *user_count) {
+    sqlite3 *db;
+    int rc = sqlite3_open("users.db", &db);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return;
     }
 
-    fclose(file);
+    char *sql = "SELECT Username FROM Users;";
+    sqlite3_stmt *stmt;
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return;
+    }
+
+    int i = 0;
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        const unsigned char *db_username = sqlite3_column_text(stmt, 0);
+        strcpy(users[i].username, (const char *)db_username);
+
+        char user_file_name[100];
+        snprintf(user_file_name, sizeof(user_file_name), "%s.txt", users[i].username);
+        FILE *user_file = fopen(user_file_name, "r");
+        if (user_file == NULL) {
+            fprintf(stderr, "Could not open file: %s\n", user_file_name);
+            continue;
+        }
+        
+        long int now = time(NULL);
+        char user_line[256];
+        while (fgets(user_line, sizeof(user_line), user_file)) {
+            if (sscanf(user_line, "Score: %d", &users[i].score) == 1) continue;
+            if (sscanf(user_line, "Gold: %d", &users[i].gold) == 1) continue;
+            if (sscanf(user_line, "Games Played: %d", &users[i].games_played) == 1) continue;
+            long first_game_time;
+            if (sscanf(user_line, "Time: %ld", &first_game_time) == 1) {
+                users[i].experience = now - first_game_time;
+            }
+        }
+
+        fclose(user_file);
+        i++;
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
     *user_count = i;
 }
+
 
 void leaderboard(char *username){
     setlocale(LC_ALL, "");
