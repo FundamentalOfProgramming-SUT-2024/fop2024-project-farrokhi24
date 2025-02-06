@@ -40,7 +40,7 @@ struct password_door{
 };
 
 int hidden_doors_count = 0;
-struct points hidden_doors[50];
+struct point hidden_doors[50];
 struct password_door password_doors[3];
 int password_doors_count = 3;
 int d;
@@ -84,9 +84,27 @@ int random_with_range(int min_rand, int max_rand){
     return ((rand() % (max_rand - min_rand + 1)) + min_rand);
 }
 
+int is_hidden_door(int x, int y){
+    for(int i = 0; i < hidden_doors_count; i++){
+        if(hidden_doors[i].x == x && hidden_doors[i].y == y){
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int find_password_door(int x, int y){
     for(int i = 0; i < 3; i++){
         if(password_doors[i].x == x && password_doors[i].y == y){
+            return i;
+        }
+    }
+    return -1;
+}
+
+int find_door(int x, int y){
+    for(int i = 0; i < 3; i++){
+        if(doors[i].x == x && doors[i].y == y){
             return i;
         }
     }
@@ -441,7 +459,7 @@ int check_movement(int type, int floor_num, int x, int y){
         spells[2]++;
     }
     
-    if(character == 'T' || character == '<' || character == '^' || character == '*' || character == '$' || character == 'm' || character == 'd' || character == 'W' || character == 'A' || character == 's' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f' || character == 'q' || character == 'w' || character == 'a'){
+    if(character == '?' || character == 'T' || character == '<' || character == '^' || character == '*' || character == '$' || character == 'm' || character == 'd' || character == 'W' || character == 'A' || character == 's' || character == 'x' || character == '+' || character == '#' || character == '.' || character == '&' || character == 'f' || character == 'q' || character == 'w' || character == 'a'){
         return 1;
     }
 
@@ -1536,7 +1554,7 @@ void print_full_map(int floor_num){
     }
 
     init_pair(21, COLOR_WHITE, COLOR_BLACK);
-    if(map[player.y][player.x].ch == '+'){
+    if(map[player.y][player.x].ch == '+' && !is_hidden_door(player.x, player.y)){
         attron(COLOR_PAIR(21));
         mvprintw(player.y, player.x, "+");
         
@@ -1588,6 +1606,14 @@ void print_full_map(int floor_num){
     mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
 
     print_enemies();
+}
+
+void print_hidden_doors(){
+    for(int i = 0; i < hidden_doors_count; i++){
+        if(rooms[find_room(hidden_doors[i].x, hidden_doors[i].y)].explored == 1 && hidden_doors[i].revealed == 1){
+            mvprintw(hidden_doors[i].y, hidden_doors[i].x, "?");
+        }
+    }
 }
 
 void print_map_with_colors(int floor_num){
@@ -1775,7 +1801,7 @@ void print_map_with_colors(int floor_num){
         }
     }
 
-    if(map[player.y][player.x].ch == '+'){
+    if(map[player.y][player.x].ch == '+' && !is_hidden_door(player.x, player.y)){
         mvprintw(player.y, player.x, "+");
     }
         
@@ -1783,7 +1809,9 @@ void print_map_with_colors(int floor_num){
         if(rooms[find_room(doors[i].x, doors[i].y)].explored == 0){
             attron(COLOR_PAIR(20));
         }
-        mvprintw(doors[i].y, doors[i].x, "+");
+        if(!is_hidden_door(player.x, player.y)){
+            mvprintw(doors[i].y, doors[i].x, "+");
+        }
         attroff(COLOR_PAIR(20));
     }
     print_password_doors();
@@ -1815,6 +1843,7 @@ void print_map_with_colors(int floor_num){
     mvprintw(LINES - 1, 55, "%3d", player.hits);
     mvprintw(LINES - 1, 144, "%d (%d Broken)", ancient_key_count / 2, ancient_key_count % 2);
     print_enemies();
+    print_hidden_doors();
 }
 
 void initialize_map(){
@@ -3249,11 +3278,13 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
                 hidden_doors[hidden_doors_count].x = x;
                 hidden_doors[hidden_doors_count].y = y;
                 hidden_doors[hidden_doors_count].revealed = 0;
-                mvprintw(y, x, "?");
+                hidden_doors_count++;
+                //mvprintw(y, x, "?");
+                map[y][x].ch = '?';
+                doors[find_room(x, y)].x = -1;
             }
         }
     }
-    getch();
 
     char previous_under = ' ';
     
