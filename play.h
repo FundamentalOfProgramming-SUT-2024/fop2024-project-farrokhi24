@@ -1009,6 +1009,7 @@ void weapon_list(){
     }
 
     while(1){
+        score = gold;
         clear();
         attroff(A_REVERSE);
         attron(A_BOLD);
@@ -3997,7 +3998,7 @@ int enter_floor(char *username, char color, char difficulty, int floor_num, char
             int result = treasure_room();
             in_treasure_room = 0;
             clear();
-            mvprintw(0, 0, "%d", result);
+            print_full_map(4);
             return result;
         }
         if(player.under.ch == '<'){
@@ -4294,7 +4295,7 @@ void save_game(char* filename, int floor_num){
     games_played += 1;
 
     char new_text[10000];
-    snprintf(new_text, sizeof(new_text), "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, gold, gold, player.hits, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
+    snprintf(new_text, sizeof(new_text), "Game Finished: 0\nTime: %ld\nScore: %d\nGold: %d\nHits: %d\nGames Played: %d\nStrength: %d\nHunger: %d\nNormal Food: %d\nDeluxe Food: %d\nMagical Food: %d\nRotten Food %d\nMace: %d\nDagger: %d\nWand: %d\nArrow: %d\nSword: %d\nHealth Spell: %d\nSpeed Spell: %d\nDamage Spell: %d\nAncient Key: %d\nFloor: %d\nPlayer y: %d\nPlayer x: %d\n", start_time, score, gold, player.hits, games_played, strength, hunger, food[0], food[1], food[2], food[3], backpack[0], backpack[1], backpack[2], backpack[3], backpack[4], spells[0], spells[1], spells[2], ancient_key_count, floor_num, player.y, player.x);
 
     char temp_string2[50];
     sprintf(temp_string2, "Room Count%d: ", floor_num);
@@ -4306,7 +4307,6 @@ void save_game(char* filename, int floor_num){
     char temp_string3[50];
     sprintf(temp_string3, "Map%d:\n", floor_num);
     strcat(new_text, temp_string3);
-
 
     for(int y = 0; y < LINES; y++){
         for(int x = 0; x < COLS; x++){
@@ -4354,10 +4354,6 @@ void save_game(char* filename, int floor_num){
     freopen(NULL, "w", file);
     fputs(final_data, file);
 
-    free(data);
-    free(part1);
-    free(part2);
-    free(final_data);
     fclose(file);
 }
 
@@ -4464,7 +4460,7 @@ void play(char *username, char color, char difficulty, int song){
         mvprintw(LINES / 2 + 2, (COLS - 28) / 2, "Press Any Key to Continue...");
         getch();
         clear();
-        //save_floor_map(filename, floor_num);
+        save_game(filename, 4);
         return;
     }
     if(floor_num == -6){
